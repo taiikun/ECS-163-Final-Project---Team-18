@@ -97,6 +97,48 @@
         .bg-gradient-5 { 
             background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
         }
+        
+        /* Story chart container styling */
+        .story-chart-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 400px;
+            min-width: 700px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .story-chart-container svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .story-legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+
+        .story-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .story-legend-color {
+            width: 16px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
         .scroll-prompt {
             position: absolute;
             bottom: -275px;
@@ -151,6 +193,10 @@
 
             .story-text p {
                 font-size: 1.1rem;
+            }
+
+            .story-chart-container {
+                min-height: 300px;
             }
         }
 
@@ -476,71 +522,73 @@
         </div>
     </section>
 
-    <!-- Step 2-->
+    <!-- Step 2: Stream Graph -->
     <section class="narrative-section bg-gradient-2">
         <div class="story-step" data-step="1">
             <div class="story-content">
                 <div class="story-text">
-                    <h2>Insert Section Title</h2>
-                    <p>Insert text here...</p>
-                    <p>Insert more explanatory or contextual text here...</p>
+                    <h2>The Salary Evolution</h2>
+                    <p>Watch how tech salaries have evolved across different roles from 2020 to 2024.</p>
+                    <p>The flowing streams show the average salaries for the top 10 tech positions, revealing which roles have seen the most growth.</p>
                 </div>
-                <div class="chart-container">
-                    <p style="text-align: center; color: white; font-style: italic;">[Insert visualization here]</p>
+                <div class="story-chart-container">
+                    <div id="story-stream-chart" style="width: 100%; height: 400px;"></div>
+                    <div id="story-stream-legend" class="story-legend"></div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Step 3-->
+    <!-- Step 3: Map Visualization -->
     <section class="narrative-section bg-gradient-3">
         <div class="story-step" data-step="2">
             <div class="story-content">
                 <div class="story-text">
-                    <h2>Insert Section Title</h2>
-                    <p>Insert text here...</p>
-                    <p>Insert more explanatory or contextual text here...</p>
+                    <h2>Geographic Distribution</h2>
+                    <p>Explore how tech opportunities and impacts vary across different regions.</p>
+                    <p>This visualization reveals the geographic patterns that have emerged in the tech industry.</p>
                 </div>
-                <div class="chart-container">
-                    <p style="text-align: center; color: white; font-style: italic;">[Insert visualization here]</p>
+                <div class="story-chart-container">
+                    <div id="story-map-chart" style="width: 100%; height: 400px;">
+                        <p style="text-align: center; color: #ffffff;">Map visualization placeholder - Add your map implementation here</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Step 4-->
+    <!-- Step 4: Bar Chart -->
     <section class="narrative-section bg-gradient-4">
         <div class="story-step" data-step="3">
             <div class="story-content">
                 <div class="story-text">
-                    <h2>Insert Section Title</h2>
-                    <p>Insert text here...</p>
-                    <p>Insert more explanatory or contextual text here...</p>
+                    <h2>Company Impact Analysis</h2>
+                    <p>See which companies have been most affected by the industry changes.</p>
+                    <p>This breakdown shows the top companies by layoff numbers, helping you understand where the industry volatility has been concentrated.</p>
                 </div>
-                <div class="chart-container">
-                    <!-- Insert chart, image, or visual here -->
-                    <p style="text-align: center; color: white; font-style: italic;">[Insert visualization here]</p>
+                <div class="story-chart-container">
+                    <svg id="story-bar-chart" width="500" height="400"></svg>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Step 5 -->
+    <!-- Step 5: Line Chart -->
     <section class="narrative-section bg-gradient-5">
         <div class="story-step" data-step="4">
             <div class="story-content">
                 <div class="story-text">
-                    <h2>The Geographic Reordering of Tech</h2>
-                    <p>Between 2020 and 2024, the geography of tech work underwent noticeable changes.</p>
-                    <p>Some regions saw major growth in hiring and job creation, while others experienced sharp pullbacks—as companies reevaluated where talent, infrastructure, and costs aligned most effectively.</p>
+                    <h2>Recovery Trajectory</h2>
+                    <p>Track the recovery of tech job openings over time.</p>
+                    <p>This trend line shows how the job market has responded and recovered, providing insights into the industry's resilience.</p>
                 </div>
-                <div class="chart-container">
-                    <!-- Insert map chart, bar chart by city, or other geographic visual here -->
-                    <p style="text-align: center; color: white; font-style: italic;">[Insert map visualization here]</p>
+                <div class="story-chart-container">
+                    <svg id="story-line-chart" width="500" height="400"></svg>
                 </div>
             </div>
         </div>
     </section>
+    
     <!-- INTERACTIVE SECTION -->
     <section class="interactive-section">
         <div class="interactive-header">
@@ -640,6 +688,332 @@
     <script src="donut-chart-remote-vs-onsite.js"></script>
 
     <script>
+        // Function to create story visualizations
+        async function loadStoryChart(stepIndex) {
+            switch(stepIndex) {
+                case 1:
+                    // Stream graph for step 1
+                    await createStoryStreamGraph();
+                    break;
+                case 2:
+                    // Map for step 2 - implement your map creation here
+                    console.log('Map visualization would go here');
+                    break;
+                case 3:
+                    // Bar chart for step 3
+                    await createStoryBarChart();
+                    break;
+                case 4:
+                    // Line chart for step 4
+                    await createStoryLineChart();
+                    break;
+            }
+        }
+
+        // Create stream graph for story
+        async function createStoryStreamGraph() {
+            // Check if already created
+            if (d3.select("#story-stream-chart svg").size() > 0) return;
+
+            // Import the necessary functions from stream-graph.js
+            if (typeof processSalaryData === 'function') {
+                const data = await processSalaryData('quarterly');
+                if (data && data.length > 0) {
+                    // Create a simplified version for the story
+                    createStreamGraphForStory(data, "#story-stream-chart", "#story-stream-legend");
+                }
+            }
+        }
+
+        // Simplified stream graph creation for story
+        function createStreamGraphForStory(data, containerSelector, legendSelector) {
+            const container = d3.select(containerSelector);
+            container.html(''); // Clear existing content
+            
+            const margin = {top: 20, right: 10, bottom: 40, left: 10};
+            const width = 500 - margin.left - margin.right;
+            const height = 350 - margin.top - margin.bottom;
+
+            const svg = container
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom);
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            // Process data for stream graph
+            const periods = [...new Set(data.map(d => d.period))].sort();
+            const categories = [...new Set(data.map(d => d.category))].slice(0, 8); // Top 8
+            
+            const stackData = periods.map(period => {
+                const periodData = {period: period};
+                categories.forEach(cat => {
+                    const record = data.find(d => d.period === period && d.category === cat);
+                    periodData[cat] = record ? record.value : 0;
+                });
+                return periodData;
+            });
+            
+            const stack = d3.stack()
+                .keys(categories)
+                .offset(d3.stackOffsetWiggle);
+            
+            const series = stack(stackData);
+            
+            const xScale = d3.scalePoint()
+                .domain(periods)
+                .range([0, width]);
+            
+            const yScale = d3.scaleLinear()
+                .domain([
+                    d3.min(series, layer => d3.min(layer, d => d[0])),
+                    d3.max(series, layer => d3.max(layer, d => d[1]))
+                ])
+                .range([height, 0]);
+            
+            const area = d3.area()
+                .x(d => xScale(d.data.period))
+                .y0(d => yScale(d[0]))
+                .y1(d => yScale(d[1]))
+                .curve(d3.curveCardinal);
+            
+            const colorScale = d3.scaleOrdinal(d3.schemePaired);
+            
+            // Create tooltip
+            const tooltip = d3.select("#tooltip");
+            
+            g.selectAll(".stream-area")
+                .data(series)
+                .enter()
+                .append("path")
+                .attr("class", "stream-area")
+                .attr("d", area)
+                .attr("fill", d => colorScale(d.key))
+                .attr("opacity", 0.8)
+                .on("mouseover", function(event, d) {
+                    g.selectAll(".stream-area").transition().duration(150).attr("opacity", 0.3);
+                    d3.select(this).transition().duration(150).attr("opacity", 1);
+                    
+                    tooltip.style("opacity", 1);
+                })
+                .on("mousemove", function(event, d) {
+                    const [mouseX] = d3.pointer(event, this);
+                    const hoveredPeriod = periods[Math.round(mouseX / (width / (periods.length - 1)))];
+                    const periodData = d.find(item => item.data.period === hoveredPeriod);
+                    const value = periodData ? periodData.data[d.key] : 0;
+                    
+                    tooltip.html(`
+                        <strong>${d.key}</strong><br>
+                        Year: ${hoveredPeriod}<br>
+                        Average Salary: $${value.toLocaleString()}
+                    `)
+                    .style("left", (event.pageX + 15) + "px")
+                    .style("top", (event.pageY - 15) + "px");
+                })
+                .on("mouseout", function() {
+                    g.selectAll(".stream-area").transition().duration(150).attr("opacity", 0.8);
+                    tooltip.style("opacity", 0);
+                });
+            
+            // Add axes
+            g.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(xScale));
+            
+            // Create legend
+            const legend = d3.select(legendSelector);
+            legend.html('');
+            
+            categories.forEach(category => {
+                const item = legend.append("div")
+                    .attr("class", "story-legend-item");
+                
+                item.append("div")
+                    .attr("class", "story-legend-color")
+                    .style("background-color", colorScale(category));
+                
+                item.append("span")
+                    .text(category)
+                    .style("font-size", "11px");
+            });
+        }
+
+        // Create bar chart for story
+        async function createStoryBarChart() {
+            // Check if already created
+            if (d3.select("#story-bar-chart").selectAll("*").size() > 0) return;
+
+            // Use the bar chart creation logic
+            if (typeof init_bar_chart_layoffs_by_company === 'function') {
+                // Create a simplified version for the story
+                const response = await fetch('tech_layoffs_Q2_2024.csv');
+                const text = await response.text();
+                const data = d3.csvParse(text);
+                
+                createBarChartForStory(data, "#story-bar-chart");
+            }
+        }
+
+        // Simplified bar chart for story
+        function createBarChartForStory(data, containerSelector) {
+            const svg = d3.select(containerSelector);
+            const margin = {top: 20, right: 20, bottom: 100, left: 60};
+            const width = +svg.attr("width") - margin.left - margin.right;
+            const height = +svg.attr("height") - margin.top - margin.bottom;
+            
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+            
+            // Group by company and sum layoffs
+            const companyData = d3.rollup(data,
+                v => d3.sum(v, d => +d.Laid_Off || 0),
+                d => d.Company
+            );
+            
+            const topCompanies = Array.from(companyData, ([company, total]) => ({company, total}))
+                .sort((a, b) => b.total - a.total)
+                .slice(0, 10);
+            
+            const x = d3.scaleBand()
+                .range([0, width])
+                .domain(topCompanies.map(d => d.company))
+                .padding(0.1);
+            
+            const y = d3.scaleLinear()
+                .range([height, 0])
+                .domain([0, d3.max(topCompanies, d => d.total)]);
+            
+            // Create tooltip
+            const tooltip = d3.select("#tooltip");
+            
+            g.selectAll(".bar")
+                .data(topCompanies)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", d => x(d.company))
+                .attr("width", x.bandwidth())
+                .attr("y", d => y(d.total))
+                .attr("height", d => height - y(d.total))
+                .attr("fill", "#667eea")
+                .on("mouseover", function(event, d) {
+                    tooltip.style("opacity", 1);
+                    d3.select(this).attr("fill", "#764ba2");
+                })
+                .on("mousemove", function(event, d) {
+                    tooltip.html(`
+                        <strong>${d.company}</strong><br>
+                        Total Layoffs: ${d.total.toLocaleString()}
+                    `)
+                    .style("left", (event.pageX + 15) + "px")
+                    .style("top", (event.pageY - 15) + "px");
+                })
+                .on("mouseout", function() {
+                    tooltip.style("opacity", 0);
+                    d3.select(this).attr("fill", "#667eea");
+                });
+            
+            g.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x))
+                .selectAll("text")
+                .attr("transform", "rotate(-45)")
+                .style("text-anchor", "end");
+            
+            g.append("g")
+                .call(d3.axisLeft(y));
+        }
+
+        // Create line chart for story
+        async function createStoryLineChart() {
+            // Check if already created
+            if (d3.select("#story-line-chart").selectAll("*").size() > 0) return;
+
+            if (typeof init_line_chart_jolts_information === 'function') {
+                const response = await fetch('jolts_info_job_postings.csv');
+                const text = await response.text();
+                const data = d3.csvParse(text);
+                
+                createLineChartForStory(data, "#story-line-chart");
+            }
+        }
+
+        // Simplified line chart for story
+        function createLineChartForStory(data, containerSelector) {
+            const svg = d3.select(containerSelector);
+            const margin = {top: 20, right: 20, bottom: 40, left: 60};
+            const width = +svg.attr("width") - margin.left - margin.right;
+            const height = +svg.attr("height") - margin.top - margin.bottom;
+            
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+            
+            // Parse dates and values
+            const parseDate = d3.timeParse("%b %Y");
+            data.forEach(d => {
+                d.date = parseDate(d.date);
+                d.value = +d.job_postings;
+            });
+            
+            data.sort((a, b) => a.date - b.date);
+            
+            const x = d3.scaleTime()
+                .range([0, width])
+                .domain(d3.extent(data, d => d.date));
+            
+            const y = d3.scaleLinear()
+                .range([height, 0])
+                .domain([0, d3.max(data, d => d.value)]);
+            
+            const line = d3.line()
+                .x(d => x(d.date))
+                .y(d => y(d.value))
+                .curve(d3.curveMonotoneX);
+            
+            // Create tooltip
+            const tooltip = d3.select("#tooltip");
+            
+            g.append("path")
+                .datum(data)
+                .attr("fill", "none")
+                .attr("stroke", "#667eea")
+                .attr("stroke-width", 2)
+                .attr("d", line);
+            
+            // Add dots
+            g.selectAll(".dot")
+                .data(data)
+                .enter().append("circle")
+                .attr("class", "dot")
+                .attr("cx", d => x(d.date))
+                .attr("cy", d => y(d.value))
+                .attr("r", 4)
+                .attr("fill", "#667eea")
+                .on("mouseover", function(event, d) {
+                    tooltip.style("opacity", 1);
+                    d3.select(this).attr("r", 6);
+                })
+                .on("mousemove", function(event, d) {
+                    tooltip.html(`
+                        <strong>${d3.timeFormat("%b %Y")(d.date)}</strong><br>
+                        Job Postings: ${d.value.toLocaleString()}
+                    `)
+                    .style("left", (event.pageX + 15) + "px")
+                    .style("top", (event.pageY - 15) + "px");
+                })
+                .on("mouseout", function() {
+                    tooltip.style("opacity", 0);
+                    d3.select(this).attr("r", 4);
+                });
+            
+            g.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x).tickFormat(d3.timeFormat("%b %Y")));
+            
+            g.append("g")
+                .call(d3.axisLeft(y));
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Initializing interactive visualizations...');
 
