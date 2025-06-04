@@ -77,7 +77,6 @@
                     <p>This graph shows the top companies by total layoff numbers from 2020 to 2024, showing which parts of the industry have been hit the hardest.</p>
                 </div>
                 <div class="story-chart-container">
-                    <div class="story-chart-title">Top Companies by Layoffs</div>
                     <svg id="story-bar-chart" width="600" height="400"></svg>
                 </div>
             </div>
@@ -519,32 +518,35 @@
             });
         }
 
-        // Create bar chart for story
+         // Create bar chart for story
         async function createStoryBarChart() {
             if (d3.select("#story-bar-chart").selectAll("*").size() > 0) return;
 
             try {
-                const response = await fetch('tech_layoffs_combined.csv');
-                const text = await response.text();
-                const lines = text.split('\n').filter(line => line.trim());
-                const data = [];
-
-                for (let i = 1; i < lines.length; i++) {
-                    const parts = lines[i].split(';');
-                    if (parts.length >= 2) {
-                        const company = parts[0]?.trim();
-                        const laidOff = parseInt(parts[1]) || 0;
-                        if (company && laidOff > 0) {
-                            data.push({ company, laidOff });
-                        }
+                // Use the same data loading approach as the interactive bar chart
+                const data = await d3.dsv(";", "tech_layoffs_combined.csv");
+                
+                // Process the data similar to the interactive version
+                const processedData = [];
+                data.forEach(d => {
+                    const laidOff = +d.Laid_Off;
+                    const company = d.Company?.trim();
+                    const year = +d.Year;
+                    
+                    if (company && laidOff > 0 && year > 2019 && year < 2025) {
+                        processedData.push({
+                            company: company,
+                            laidOff: laidOff,
+                            year: year
+                        });
                     }
-                }
+                });
 
-                if (data.length > 0) {
-                    createBarChartForStory(data, "#story-bar-chart");
+                if (processedData.length > 0) {
+                    createBarChartForStory(processedData, "#story-bar-chart");
                 }
             } catch (error) {
-                console.error('Error loading bar chart data');
+                console.error('Error loading bar chart data:', error);
             }
         }
 
@@ -566,7 +568,7 @@
                 .style("font-size", "16px")
                 .style("font-weight", "500")
                 .style("fill", "white")
-                .text("Top Companies by Layoffs");
+                .text("Top Companies by Total Layoffs");
             
             // Add axis labels
             g.append("text")
@@ -585,7 +587,7 @@
                 .attr("text-anchor", "middle")
                 .attr("transform", "rotate(-90)")
                 .attr("x", -height / 2)
-                .attr("y", -margin.left + 15)
+                .attr("y", -margin.left + 10)
                 .style("font-size", "13px")
                 .style("font-family", "sans-serif")
                 .style("font-weight", "500")
