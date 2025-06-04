@@ -1,7 +1,7 @@
 function init_bar_chart_layoffs_by_company() {
     const svg = d3.select("#barChartLayoffsByCompany"),
         margin = { top: 40, right: 20, bottom: 100, left: 60 },
-        width = +svg.attr("width") - margin.left - margin.right,
+        width = 650 - margin.left - margin.right,
         height = +svg.attr("height") - margin.top - margin.bottom,
         chart = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
