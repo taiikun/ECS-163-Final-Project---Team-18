@@ -518,6 +518,14 @@
             height: 100%;
         }
 
+        #donutChartRemote {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            transform: translateX(60px);
+        }
+
         .story-chart-title {
             text-align: center;
             font-weight: 600;

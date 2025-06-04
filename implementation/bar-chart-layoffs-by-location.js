@@ -1,7 +1,7 @@
 function init_bar_chart_layoffs_by_location() {
     const svg = d3.select("#barChartLayoffsByLocation"),
         margin = { top: 40, right: 20, bottom: 100, left: 70 },
-        width = 650 - margin.left - margin.right,
+        width = +svg.attr("width") - margin.left - margin.right,
         height = +svg.attr("height") - margin.top - margin.bottom,
         chart = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
@@ -51,12 +51,20 @@ function init_bar_chart_layoffs_by_location() {
             buttonContainer.append("button")
                 .text(year)
                 .attr("class", "year-button")
-                .on("click", () => updateChart(year));
+                .on("click", function () {
+                    // Disable all buttons in this container
+                    buttonContainer.selectAll("button").attr("disabled", true);
+                    const clicked = d3.select(this);
+                    const year = +clicked.text();
+
+                    updateChart(year).then(() => {
+                        // Re-enable all buttons after chart finishes updating
+                        buttonContainer.selectAll("button").attr("disabled", null);
+                    });
+                });
         });
 
         function updateChart(selectedYear) {
-            buttonContainer.selectAll("button").attr("disabled", true);
-
             const filtered = data.filter(d => d.Year === selectedYear);
             const topLocations = d3.rollups(filtered, v => d3.sum(v, d => d.Laid_Off), d => d.Location_HQ)
                 .sort((a, b) => b[1] - a[1])
@@ -127,19 +135,21 @@ function init_bar_chart_layoffs_by_location() {
                     tooltip.style("opacity", 0);
                 });
 
-            barsEnter.transition().duration(1000)
+            const enterTransition = barsEnter.transition().duration(1000)
                 .attr("y", d => y(d[1]))
                 .attr("height", d => height - y(d[1]))
-                .style("opacity", 1)
-                .end()
-                .then(() => {
-                    buttonContainer.selectAll("button").attr("disabled", null);
-                });
+                .style("opacity", 1);
 
+            // Update active class styling
             buttonContainer.selectAll("button")
-                .classed("active", function () {
+                .classed("active", false);
+            buttonContainer.selectAll("button")
+                .filter(function () {
                     return +this.textContent === selectedYear;
-                });
+                })
+                .classed("active", true);
+
+            return enterTransition.end(); // Returns Promise
         }
 
         updateChart(years[0]);
