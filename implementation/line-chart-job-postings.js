@@ -53,7 +53,7 @@ function init_line_chart_jolts_information(mode) {
         const lineColor = mode === 'story' ? 'white' : '#1f77b4';
         const dotColor = mode === 'story' ? '#ff7f0e' : '#1f77b4';
         const hoverDotColor = mode === 'story' ? '#ffa500' : '#ff7f0e';
-        const gridColor = mode === 'story' ? '#999' : '#ccc';
+        const gridColor = mode === 'story' ? 'white' : '#ccc';
 
         chart.append("g")
             .attr("transform", `translate(0,${height})`)

@@ -462,15 +462,6 @@
             font-weight: 500;
         }
 
-        .axis path,
-        .axis line {
-            stroke: black;
-        }
-
-        .axis text {
-            fill: white;
-        }
-
         .year-button {
             padding: 8px 16px;
             margin: 0 5px 10px 0;

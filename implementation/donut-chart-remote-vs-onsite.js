@@ -1,4 +1,4 @@
-function init_donut_chart_remote_vs_onsite(containerSelector = "#donutChartRemote") {    const width = 400;
+function init_donut_chart_remote_vs_onsite(containerSelector = "#donutChartRemote") {const width = 400;
     const height = 400;
     const radius = Math.min(width, height) / 2;
 
@@ -65,7 +65,7 @@ function init_donut_chart_remote_vs_onsite(containerSelector = "#donutChartRemot
                 .attr("d", arc)
                 .attr("fill", d => color(d.data[0]))
                 .attr("stroke", "white")
-                .style("stroke-width", "2px")
+                .style("stroke-width", "1px")
                 .on("mouseover", function (event, d) {
                     d3.select(this)
                         .transition()
