@@ -72,6 +72,23 @@
             background-color: #0056b3;
         }
 
+        .year-button {
+            background-color: white;
+            color: #007bff;
+            border: 1px solid #007bff;
+        }
+
+        .year-button:hover {
+            background-color: #e6f0ff;
+        }
+
+        .year-button.active {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+
+
         #chart-container {
             position: relative;
         }
@@ -180,10 +197,32 @@
         </div>
         
         <div id="legend" class="legend"></div>
+
+        <h2>Top 10 Companies by Layoffs</h2>
+        <div id="yearButtonsLayoffsByCompany"></div>
+        <svg id="barChartLayoffsByCompany" width="800" height="500"></svg>
+
+        <h2>Top 10 Locations by Layoffs</h2>
+        <div id="yearButtonsLayoffsByLocation"></div>
+        <svg id="barChartLayoffsByLocation" width="800" height="500"></svg>
+
+        <h2>Monthly Job Openings</h2>
+        <svg id="lineChartJOLTS" width="1000" height="500"></svg>
     </div>
     
     <div class="tooltip" id="tooltip"></div>
 
     <script src="stream-graph.js"></script>
+    <script src="bar-chart-layoffs-by-company.js"></script>
+    <script src="bar-chart-layoffs-by-location.js"></script>
+    <script src="line-chart-job-postings.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+        init_bar_chart_layoffs_by_company();
+        init_bar_chart_layoffs_by_location();
+        init_line_chart_jolts_information();
+        });
+    </script>
+
 </body>
 </html>
