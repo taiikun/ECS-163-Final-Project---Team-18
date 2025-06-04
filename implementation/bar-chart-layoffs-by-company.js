@@ -43,31 +43,26 @@ function init_bar_chart_layoffs_by_company() {
         data = data.filter(d => d.Year > 2019 && d.Year < 2025);
 
         const years = [...new Set(data.map(d => d.Year))].sort();
-        const select = d3.select("#yearSelectLayoffsByCompany");
-
-        select.selectAll("option")
-            .data(years)
-            .enter()
-            .append("option")
-            .attr("value", d => d)
-            .text(d => d);
-
-        select.on("change", () => updateChart(+select.node().value));
 
         const buttonContainer = d3.select("#yearButtonsLayoffsByCompany");
         years.forEach(year => {
             buttonContainer.append("button")
                 .text(year)
                 .attr("class", "year-button")
-                .on("click", () => updateChart(year));
+                .on("click", function () {
+                    buttonContainer.selectAll("button").attr("disabled", true);
+                    const clicked = d3.select(this);
+                    const year = +clicked.text();
+                    updateChart(year).then(() => {
+                        buttonContainer.selectAll("button").attr("disabled", null);
+                    });
+                });
         });
 
         d3.select(buttonContainer.selectAll("button").nodes()[0])
             .classed("active", true);
 
         function updateChart(selectedYear) {
-            buttonContainer.selectAll("button").attr("disabled", true);
-
             const filtered = data.filter(d => d.Year === selectedYear);
             const topCompanies = d3.rollups(filtered, v => d3.sum(v, d => d.Laid_Off), d => d.Company)
                 .sort((a, b) => b[1] - a[1])
@@ -76,8 +71,7 @@ function init_bar_chart_layoffs_by_company() {
             x.domain(topCompanies.map(d => d[0]));
             y.domain([0, d3.max(topCompanies, d => d[1])]);
 
-            xAxisGroup
-                .call(d3.axisBottom(x))
+            xAxisGroup.call(d3.axisBottom(x))
                 .selectAll("text")
                 .attr("transform", "rotate(-30)")
                 .style("text-anchor", "end")
@@ -91,8 +85,7 @@ function init_bar_chart_layoffs_by_company() {
 
             const bars = chart.selectAll(".bar-company").data(topCompanies, d => d[0]);
 
-            bars.exit()
-                .transition().duration(800)
+            bars.exit().transition().duration(800)
                 .attr("y", y(0))
                 .attr("height", 0)
                 .style("opacity", 0)
@@ -146,23 +139,20 @@ function init_bar_chart_layoffs_by_company() {
                     tooltip.transition().duration(200).style("opacity", 0);
                 });
 
-            barsEnter.transition().duration(1000)
+            const enterTransition = barsEnter.transition().duration(1000)
                 .attr("y", d => y(d[1]))
                 .attr("height", d => height - y(d[1]))
-                .style("opacity", 1)
-                .end()
-                .then(() => {
-                    buttonContainer.selectAll("button").attr("disabled", null);
-                });
+                .style("opacity", 1);
 
-            buttonContainer.selectAll("button")
-                .classed("active", false);
-
+            // Update active class
+            buttonContainer.selectAll("button").classed("active", false);
             buttonContainer.selectAll("button")
                 .filter(function () {
                     return +this.textContent === selectedYear;
                 })
                 .classed("active", true);
+
+            return enterTransition.end();
         }
 
         updateChart(years[0]);
