@@ -1,9 +1,9 @@
-function init_donut_chart_remote_vs_onsite(containerSelector = "#donutChartRemote") {const width = 400;
+function init_donut_chart_remote_vs_onsite(containerSelector = "#donutChartRemote") {
+    const width = 400;
     const height = 400;
     const radius = Math.min(width, height) / 2;
 
     const svg = d3.select(containerSelector)
-
         .append("svg")
         .attr("width", width + 75)
         .attr("height", height + 40)
@@ -57,8 +57,9 @@ function init_donut_chart_remote_vs_onsite(containerSelector = "#donutChartRemot
                 .outerRadius(radius);
 
             const data_ready = pie(Object.entries(workTypeCounts));
+            const total = d3.sum(data_ready, d => d.data[1]);
 
-            const paths = svg.selectAll("path")
+            svg.selectAll("path")
                 .data(data_ready)
                 .enter()
                 .append("path")
@@ -72,7 +73,8 @@ function init_donut_chart_remote_vs_onsite(containerSelector = "#donutChartRemot
                         .duration(200)
                         .attr("d", arcHover);
 
-                    tooltip.html(`<strong>${d.data[0]}</strong><br>${d.data[1]} jobs`)
+                    const percentage = ((d.data[1] / total) * 100).toFixed(1);
+                    tooltip.html(`<strong>${d.data[0]}</strong><br>${percentage}%`)
                         .style("left", (event.pageX + 10) + "px")
                         .style("top", (event.pageY - 25) + "px")
                         .transition()
@@ -94,12 +96,9 @@ function init_donut_chart_remote_vs_onsite(containerSelector = "#donutChartRemot
                         .style("opacity", 0);
                 });
 
-            d3.select(containerSelector)
-
-                .style("position", "relative");
+            d3.select(containerSelector).style("position", "relative");
 
             const legend = d3.select(containerSelector)
-
                 .append("div")
                 .attr("class", "legend")
                 .style("position", "absolute")
@@ -116,7 +115,7 @@ function init_donut_chart_remote_vs_onsite(containerSelector = "#donutChartRemot
                 .style("border-radius", "5px")
                 .style("box-shadow", "0 0 5px rgba(0,0,0,0.1)");
 
-            Object.entries(workTypeCounts).forEach(([key, value]) => {
+            Object.entries(workTypeCounts).forEach(([key]) => {
                 const item = legend.append("div")
                     .style("display", "flex")
                     .style("align-items", "center")
@@ -128,14 +127,12 @@ function init_donut_chart_remote_vs_onsite(containerSelector = "#donutChartRemot
                     .style("background", color(key))
                     .style("border-radius", "3px");
 
-                item.append("span").text(`${key}`);
+                item.append("span").text(key);
             });
-
         })
         .catch(err => {
             console.error("Failed to load or parse CSV:", err);
             d3.select(containerSelector)
-
                 .append("div")
                 .attr("class", "error")
                 .text("Error loading donut chart data.");
