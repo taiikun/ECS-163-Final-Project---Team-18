@@ -160,7 +160,9 @@ function createStreamGraph(data) {
         .on("mouseover", function(event, d) {
             g.selectAll(".stream-area").transition().duration(150).attr("opacity", 0.3);
             d3.select(this).transition().duration(150).attr("opacity", 1);
-            
+            tooltip.style("opacity", 1);
+        })
+        .on("mousemove", function(event, d) {
             const [mouseX] = d3.pointer(event, this);
             const invertedX = xScale.domain().find((p, i, arr) => {
                 if (i === arr.length - 1) return true;
@@ -178,8 +180,7 @@ function createStreamGraph(data) {
                 Average Salary: $${value.toLocaleString()}
             `)
             .style("left", (event.pageX + 15) + "px")
-            .style("top", (event.pageY - 15) + "px")
-            .style("opacity", 1);
+            .style("top", (event.pageY - 15) + "px");
         })
         .on("mouseout", function() {
             g.selectAll(".stream-area").transition().duration(150).attr("opacity", 0.8);
