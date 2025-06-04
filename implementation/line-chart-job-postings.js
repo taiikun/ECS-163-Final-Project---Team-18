@@ -1,5 +1,13 @@
-function init_line_chart_jolts_information() {
-    const svg = d3.select("#lineChartJOLTS"),
+function init_line_chart_jolts_information(mode) {
+    const chartId = mode === 'story' ? "#StoryLineChartJOLTS" : "#InteractiveLineChartJOLTS";
+
+    const svgEl = document.querySelector(chartId);
+    if (!svgEl) {
+        console.warn(`Element ${chartId} not found in DOM.`);
+        return;
+    }
+
+    const svg = d3.select(chartId),
         margin = { top: 40, right: 60, bottom: 60, left: 60 },
         width = +svg.attr("width") - margin.left - margin.right,
         height = +svg.attr("height") - margin.top - margin.bottom,
@@ -14,10 +22,10 @@ function init_line_chart_jolts_information() {
         const data = [];
         rawData.forEach(row => {
             months.forEach(month => {
-                data.push({
-                    date: parseDate(`${row.Year}-${month}`),
-                    value: +row[month]
-                });
+                const value = +row[month];
+                if (!isNaN(value)) {
+                    data.push({ date: parseDate(`${row.Year}-${month}`), value });
+                }
             });
         });
 
@@ -31,10 +39,6 @@ function init_line_chart_jolts_information() {
             .domain([0, d3.max(data, d => d.value)]).nice()
             .range([height, 0]);
 
-        const yGrid = d3.axisLeft(y)
-            .tickSize(-width)
-            .tickFormat("");
-
         const xAxisYears = d3.axisBottom(x)
             .ticks(d3.timeYear.every(1))
             .tickFormat(d3.timeFormat("%Y"))
@@ -42,27 +46,38 @@ function init_line_chart_jolts_information() {
             .tickPadding(30);
 
         const yAxis = d3.axisLeft(y);
+        const yGrid = d3.axisLeft(y).tickSize(-width).tickFormat("");
+
+        const textColor = mode === 'story' ? 'white' : 'black';
+        const axisColor = mode === 'story' ? 'white' : '#000';
+        const lineColor = mode === 'story' ? 'white' : '#1f77b4';
+        const dotColor = mode === 'story' ? '#ff7f0e' : '#1f77b4';
+        const hoverDotColor = mode === 'story' ? '#ffa500' : '#ff7f0e';
+        const gridColor = mode === 'story' ? 'white' : '#ccc';
 
         chart.append("g")
             .attr("transform", `translate(0,${height})`)
             .call(xAxisYears)
-            .selectAll("text")
-            .style("font-family", "sans-serif")
-            .style("font-size", "12px")
-            .style("font-weight", "500");
+            .call(g => g.selectAll("text")
+                .style("fill", textColor)
+                .style("font-family", "sans-serif")
+                .style("font-size", "12px"))
+            .call(g => g.selectAll("path, line").attr("stroke", axisColor));
+
+        chart.append("g")
+            .call(yAxis)
+            .call(g => g.selectAll("text")
+                .style("fill", textColor)
+                .style("font-family", "sans-serif")
+                .style("font-size", "12px"))
+            .call(g => g.selectAll("path, line").attr("stroke", axisColor));
 
         chart.append("g")
             .attr("class", "grid")
             .call(yGrid)
             .selectAll("line")
-            .attr("stroke", "#ccc")
+            .attr("stroke", gridColor)
             .attr("stroke-dasharray", "2,2");
-
-        chart.append("g")
-            .call(yAxis)
-            .selectAll("text")
-            .style("font-family", "sans-serif")
-            .style("font-size", "12px");
 
         chart.append("text")
             .attr("class", "x label")
@@ -71,7 +86,7 @@ function init_line_chart_jolts_information() {
             .attr("y", height + margin.bottom - 10)
             .style("font-size", "13px")
             .style("font-family", "sans-serif")
-            .style("font-weight", "500")
+            .style("fill", textColor)
             .text("Date");
 
         chart.append("text")
@@ -82,7 +97,7 @@ function init_line_chart_jolts_information() {
             .attr("y", -margin.left + 15)
             .style("font-size", "13px")
             .style("font-family", "sans-serif")
-            .style("font-weight", "500")
+            .style("fill", textColor)
             .text("Job Openings (Thousands)");
 
         const line = d3.line()
@@ -93,7 +108,7 @@ function init_line_chart_jolts_information() {
         chart.append("path")
             .datum(data)
             .attr("fill", "none")
-            .attr("stroke", "#1f77b4")
+            .attr("stroke", lineColor)
             .attr("stroke-width", 2.5)
             .attr("d", line);
 
@@ -104,30 +119,27 @@ function init_line_chart_jolts_information() {
             .attr("cx", d => x(d.date))
             .attr("cy", d => y(d.value))
             .attr("r", 4)
-            .attr("fill", "#1f77b4")
+            .attr("fill", dotColor)
             .style("cursor", "pointer")
-            .on("mouseover", function(event, d) {
+            .on("mouseover", function (event, d) {
                 d3.select(this)
                     .transition()
                     .duration(150)
                     .attr("r", 7)
-                    .attr("fill", "#ff7f0e");
+                    .attr("fill", hoverDotColor);
 
                 tooltip
                     .style("left", (event.pageX + 10) + "px")
                     .style("top", (event.pageY - 28) + "px")
                     .style("opacity", 1)
-                    .html(`
-                        <strong>${d3.timeFormat("%B %Y")(d.date)}</strong><br>
-                        ${d.value.toLocaleString()}k openings
-                    `);
+                    .html(`<strong>${d3.timeFormat("%B %Y")(d.date)}</strong><br>${d.value.toLocaleString()}k openings`);
             })
-            .on("mouseout", function() {
+            .on("mouseout", function () {
                 d3.select(this)
                     .transition()
                     .duration(150)
                     .attr("r", 4)
-                    .attr("fill", "#1f77b4");
+                    .attr("fill", dotColor);
 
                 tooltip.style("opacity", 0);
             });

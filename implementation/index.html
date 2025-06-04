@@ -94,7 +94,7 @@
                 </div>
                 <div class="story-chart-container">
                     <div class="story-chart-title">Job Market Recovery</div>
-                    <svg id="story-line-chart" width="600" height="400"></svg>
+                    <svg id="StoryLineChartJOLTS" width="600" height="400" data-rendered="false"></svg>
                 </div>
             </div>
         </div>
@@ -187,7 +187,7 @@
                     <p>Track the recovery of tech job openings month by month.</p>
                 </div>
                 <div class="viz-content">
-                    <svg id="lineChartJOLTS" width="800" height="400"></svg>
+                    <svg id="InteractiveLineChartJOLTS" width="800" height="400"></svg>
                 </div>
             </div>
 
@@ -254,7 +254,10 @@
                     await createStoryBarChart();
                     break;
                 case 4:
-                    await createStoryLineChart();
+                    if (!document.querySelector("#StoryLineChartJOLTS").dataset.rendered) {
+                        init_line_chart_jolts_information('story');
+                        document.querySelector("#StoryLineChartJOLTS").dataset.rendered = "true";
+                    }
                     break;
                 case 5:
                     if (!document.querySelector("#story-donut-chart").dataset.rendered) {
@@ -728,109 +731,7 @@
                 .selectAll("text")
                 .style("fill", "white")
                 .style("font-size", "12px");
-        }
-
-        // Create line chart for story
-        async function createStoryLineChart() {
-            if (d3.select("#story-line-chart").selectAll("*").size() > 0) return;
-
-            try {
-                const response = await fetch('jolts_information_job_openings.csv');
-                const text = await response.text();
-                const rawData = d3.csvParse(text);
-                
-                const data = [];
-                const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                const parseDate = d3.timeParse("%Y-%b");
-
-                rawData.forEach(row => {
-                    months.forEach(month => {
-                        const value = +row[month];
-                        if (!isNaN(value)) {
-                            data.push({
-                                date: parseDate(`${row.Year}-${month}`),
-                                value: value
-                            });
-                        }
-                    });
-                });
-
-                data.sort((a, b) => a.date - b.date);
-                createLineChartForStory(data, "#story-line-chart");
-            } catch (error) {
-                console.error('Error loading line chart data:', error);
-            }
-        }
-
-        function createLineChartForStory(data, containerSelector) {
-            const svg = d3.select(containerSelector);
-            const margin = {top: 20, right: 20, bottom: 40, left: 60};
-            const width = +svg.attr("width") - margin.left - margin.right;
-            const height = +svg.attr("height") - margin.top - margin.bottom;
-            
-            const g = svg.append("g")
-                .attr("transform", `translate(${margin.left},${margin.top})`);
-            
-            const x = d3.scaleTime()
-                .range([0, width])
-                .domain(d3.extent(data, d => d.date));
-            
-            const y = d3.scaleLinear()
-                .range([height, 0])
-                .domain([0, d3.max(data, d => d.value)]);
-            
-            const line = d3.line()
-                .x(d => x(d.date))
-                .y(d => y(d.value))
-                .curve(d3.curveMonotoneX);
-            
-            const tooltip = d3.select("#tooltip");
-            
-            g.append("path")
-                .datum(data)
-                .attr("fill", "none")
-                .attr("stroke", "white")
-                .attr("stroke-width", 3)
-                .attr("d", line);
-            
-            g.selectAll(".dot")
-                .data(data)
-                .enter().append("circle")
-                .attr("class", "dot")
-                .attr("cx", d => x(d.date))
-                .attr("cy", d => y(d.value))
-                .attr("r", 4)
-                .attr("fill", "white")
-                .attr("stroke", "#667eea")
-                .attr("stroke-width", 2)
-                .on("mouseover", function(event, d) {
-                    tooltip.style("opacity", 1);
-                    d3.select(this).attr("r", 6);
-                })
-                .on("mousemove", function(event, d) {
-                    tooltip.html(`
-                        <strong>${d3.timeFormat("%b %Y")(d.date)}</strong><br>
-                        Job Openings: ${d.value.toLocaleString()}k
-                    `)
-                    .style("left", (event.pageX + 15) + "px")
-                    .style("top", (event.pageY - 15) + "px");
-                })
-                .on("mouseout", function() {
-                    tooltip.style("opacity", 0);
-                    d3.select(this).attr("r", 4);
-                });
-            
-            g.append("g")
-                .attr("transform", `translate(0,${height})`)
-                .call(d3.axisBottom(x).ticks(5).tickFormat(d3.timeFormat("%Y")))
-                .selectAll("text")
-                .style("fill", "white");
-            
-            g.append("g")
-                .call(d3.axisLeft(y))
-                .selectAll("text")
-                .style("fill", "white");
-        }     
+        }  
 
         // Interactive map function
         async function initInteractiveMap() {
@@ -1009,7 +910,10 @@
                 if (typeof updateVisualization === 'function') updateVisualization();
                 if (typeof init_bar_chart_layoffs_by_company === 'function') init_bar_chart_layoffs_by_company();
                 if (typeof init_bar_chart_layoffs_by_location === 'function') init_bar_chart_layoffs_by_location();
-                if (typeof init_line_chart_jolts_information === 'function') init_line_chart_jolts_information();
+                if (typeof init_line_chart_jolts_information === 'function') {
+                    init_line_chart_jolts_information('interactive');
+                    init_line_chart_jolts_information('story');
+                }
                 if (typeof init_donut_chart_remote_vs_onsite === 'function') init_donut_chart_remote_vs_onsite();
                 initInteractiveMap();
             }, 500);
@@ -1046,6 +950,8 @@
                 const rect = section.getBoundingClientRect();
                 const step = section.querySelector('.story-step');
                 const navDot = document.querySelectorAll('.nav-dot')[index];
+
+                if (!step) return; // skip if step is missing
 
                 if (rect.top < viewportMiddle && rect.bottom > viewportMiddle) {
                     if (currentStep !== index) {
