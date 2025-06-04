@@ -142,7 +142,7 @@ function createStreamGraph(data) {
             d3.max(series, layer => d3.max(layer, d => d[1]))
         ])
         .range([height, 0]);    
-        
+
     const area = d3.area()
         .x(d => xScale(d.data.period))
         .y0(d => yScale(d[0]))
@@ -197,10 +197,6 @@ function createStreamGraph(data) {
         .attr("dx", "-.8em")
         .attr("dy", ".15em");
         
-    g.append("g")
-        .attr("class", "axis y-axis")
-        .call(d3.axisLeft(yScale));
-    
     g.append("text")
         .attr("class", "axis-label y-axis-label")
         .attr("transform", "rotate(-90)")
