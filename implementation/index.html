@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,6 +15,188 @@
             padding: 0;
             overflow-x: hidden;
         }
+
+        /* Narrative Section */
+        .narrative-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 80px 20px;
+        }
+
+        .story-step {
+            max-width: 1200px;
+            margin: 0 auto;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s ease-in-out;
+        }
+
+        .story-step.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .story-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .story-text {
+            padding: 40px;
+        }
+
+        .story-text h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            line-height: 1.2;
+        }
+
+        .story-text h2 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .story-text p {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .story-text .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .bg-gradient-1 {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+        }
+
+        .bg-gradient-2 {
+            background: linear-gradient(135deg, #ff6a5b 0%, #ff9472 100%);
+        }
+
+        .bg-gradient-3 {
+            background: linear-gradient(135deg, #1fa2ff 0%, #12d8fa 50%, #a6ffcb 100%);
+        }
+
+        .bg-gradient-4 {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .bg-gradient-5 {
+            background: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
+        }
+
+        .scroll-prompt {
+            position: absolute;
+            bottom: -300px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            animation: bounce 2s infinite;
+        }
+
+        .scroll-prompt::before {
+            content: "↓";
+            display: block;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateX(-50%) translateY(0);
+            }
+
+            40% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+
+            60% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .story-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .story-text h1 {
+                font-size: 2.5rem;
+            }
+
+            .story-text h2 {
+                font-size: 2rem;
+            }
+
+            .story-text p {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Progress bar at top of screen */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            z-index: 1001;
+        }
+
+        /* Dot navigation on right side */
+        .story-nav {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ddd;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-dot.active {
+            background: #667eea;
+            transform: scale(1.3);
+        }
+
+        .nav-dot:hover {
+            background: #764ba2;
+            transform: scale(1.2);
+        }
+
 
         /* Interactive Section */
         .interactive-section {
@@ -45,7 +228,7 @@
             border-radius: 12px;
             padding: 30px;
             margin-bottom: 40px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
         }
 
         .controls {
@@ -68,7 +251,8 @@
             font-size: 0.9rem;
         }
 
-        select, button {
+        select,
+        button {
             padding: 12px 16px;
             border: 2px solid #e1e8ed;
             border-radius: 8px;
@@ -78,7 +262,8 @@
             transition: all 0.3s ease;
         }
 
-        select:hover, select:focus {
+        select:hover,
+        select:focus {
             border-color: #667eea;
             outline: none;
         }
@@ -101,20 +286,25 @@
             display: grid;
             /* Adjust grid columns for potentially 4 items.
                Could be 2x2 on wider screens or remain 1fr for stacking. */
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); /* Responsive grid */
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            /* Responsive grid */
             gap: 40px;
-            max-width: 1400px; /* Max width of the grid container */
-            margin: 40px auto 0 auto; /* Center the grid */
+            max-width: 1400px;
+            /* Max width of the grid container */
+            margin: 40px auto 0 auto;
+            /* Center the grid */
         }
 
         .viz-card {
             background: white;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease;
-            display: flex; /* For better internal alignment if needed */
-            flex-direction: column; /* Stack header and content */
+            display: flex;
+            /* For better internal alignment if needed */
+            flex-direction: column;
+            /* Stack header and content */
         }
 
         .viz-card:hover {
@@ -140,27 +330,31 @@
 
         .viz-content {
             padding: 30px;
-            flex-grow: 1; /* Allow content to take available space */
-            display: flex; /* For centering chart if needed */
+            flex-grow: 1;
+            /* Allow content to take available space */
+            display: flex;
+            /* For centering chart if needed */
             flex-direction: column;
-            align-items: center; /* Center chart horizontally */
+            align-items: center;
+            /* Center chart horizontally */
         }
-        
-        
-        .viz-content svg, .viz-content div[id^="chart"], .viz-content div[id^="donutChartRemote"] {
+
+
+        .viz-content svg,
+        .viz-content div[id^="chart"],
+        .viz-content div[id^="donutChartRemote"] {
             width: 100%;
-            max-width: 800px; /
-            display: block; 
+            max-width: 800px;
+            display: block;
             margin-left: auto;
             margin-right: auto;
         }
 
-
-         #chart-container { 
+        #chart-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 100%; 
+            width: 100%;
         }
 
         .tooltip {
@@ -264,25 +458,117 @@
                 flex-direction: column;
                 gap: 20px;
             }
+
             .visualization-grid {
-                grid-template-columns: 1fr; /* Stack cards on smaller screens */
+                grid-template-columns: 1fr;
+                /* Stack cards on smaller screens */
             }
         }
     </style>
 </head>
+
 <body>
+    <!-- Progress Bar -->
+    <div id="progressBar" class="progress-bar"></div>
+
+    <!-- Story Navigation Dots -->
+    <div id="storyNav" class="story-nav"></div>
+
+    <!-- NARRATIVE SECTION (Martini Glass Stem) -->
+
+    <!-- Step 1: Title/Hook -->
+    <section class="narrative-section bg-gradient-1">
+        <div class="story-step active" data-step="0">
+            <div class="story-content">
+                <div class="story-text" style="grid-column: span 2; text-align: center;">
+                    <h1>The Great Tech Shift: 2020–2024</h1>
+                    <p>Remote work boomed. Layoffs surged. Priorities flipped.</p>
+                    <p>This dashboard reveals how tech careers transformed—and where they’re headed next.</p>
+                </div>
+            </div>
+            <div class="scroll-prompt">
+                Scroll to uncover the trends shaping tech careers
+            </div>
+        </div>
+    </section>
+
+    <!-- Step 2-->
+    <section class="narrative-section bg-gradient-2">
+        <div class="story-step" data-step="1">
+            <div class="story-content">
+                <div class="story-text">
+                    <h2>Insert Section Title</h2>
+                    <p>Insert text here...</p>
+                    <p>Insert more explanatory or contextual text here...</p>
+                </div>
+                <div class="chart-container">
+                    <!-- Insert chart, image, or visual here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Step 3-->
+    <section class="narrative-section bg-gradient-3">
+        <div class="story-step" data-step="2">
+            <div class="story-content">
+                <div class="story-text">
+                    <h2>Insert Section Title</h2>
+                    <p>Insert text here...</p>
+                    <p>Insert more explanatory or contextual text here...</p>
+                </div>
+                <div class="chart-container">
+                    <!-- Insert chart, image, or visual here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Step 4-->
+    <section class="narrative-section bg-gradient-4">
+        <div class="story-step" data-step="3">
+            <div class="story-content">
+                <div class="story-text">
+                    <h2>Insert Section Title</h2>
+                    <p>Insert text here...</p>
+                    <p>Insert more explanatory or contextual text here...</p>
+                </div>
+                <div class="chart-container">
+                    <!-- Insert chart, image, or visual here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Step 5 -->
+    <section class="narrative-section bg-gradient-5">
+        <div class="story-step" data-step="4">
+            <div class="story-content">
+                <div class="story-text">
+                    <h2>Insert Section Title</h2>
+                    <p>Insert text here...</p>
+                    <p>Insert more explanatory or contextual text here...</p>
+                </div>
+                <div class="chart-container">
+                    <!-- Insert chart, image, or visual here -->
+                </div>
+            </div>
+        </div>
+    </section>
     <!-- INTERACTIVE SECTION -->
     <section class="interactive-section">
         <div class="interactive-header">
             <h2>Explore The Data</h2>
-            <p>Now it's your turn to explore. Dive deep into salary trends, geographical patterns, and company data. Use these interactive visualizations to inform your career decisions.</p>
+            <p>Now it's your turn to explore. Dive deep into salary trends, geographical patterns, and company data. Use
+                these interactive visualizations to inform your career decisions.</p>
         </div>
 
         <!-- Main Interactive Stream Graph -->
         <div class="viz-card">
             <div class="viz-header">
                 <h3>Interactive Timeline</h3>
-                <p>Switch between salary trends and layoff patterns to see the full picture of the tech job market evolution</p>
+                <p>Switch between salary trends and layoff patterns to see the full picture of the tech job market
+                    evolution</p>
             </div>
             <div class="viz-content">
                 <div class="controls-container">
@@ -303,7 +589,8 @@
                         </div>
                         <div class="control-group">
                             <label> </label> <!-- Empty label for alignment -->
-                            <button id="animate-btn" title="Click to animate the visualization">Animate Timeline</button>
+                            <button id="animate-btn" title="Click to animate the visualization">Animate
+                                Timeline</button>
                         </div>
                     </div>
                 </div>
@@ -322,7 +609,8 @@
                     <p>See which companies had the most layoffs by year—essential intel for evaluating job stability</p>
                 </div>
                 <div class="viz-content">
-                    <div id="yearSelectLayoffsByCompany" style="display: none;"> <!-- This seems unused, keeping for now -->
+                    <div id="yearSelectLayoffsByCompany" style="display: none;">
+                        <!-- This seems unused, keeping for now -->
                         <select></select>
                     </div>
                     <div id="yearButtonsLayoffsByCompany"></div>
@@ -362,7 +650,7 @@
             </div>
         </div>
     </section> <!-- End of interactive-section -->
-    
+
     <div class="tooltip" id="tooltip"></div>
 
     <!-- Scripts -->
@@ -370,7 +658,7 @@
     <script src="bar-chart-layoffs-by-company.js"></script>
     <script src="bar-chart-layoffs-by-location.js"></script>
     <script src="line-chart-job-postings.js"></script>
-    <script src="donut-chart-remote-vs-onsite.js"></script> 
+    <script src="donut-chart-remote-vs-onsite.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -420,14 +708,85 @@
             // Global error handling for missing resources (optional but good practice)
             window.addEventListener('error', (event) => {
                 if (event.target.tagName === 'SCRIPT') {
-                     console.error('Error loading script:', event.target.src, event);
+                    console.error('Error loading script:', event.target.src, event);
                 } else if (event.target.tagName === 'LINK') {
-                     console.error('Error loading stylesheet:', event.target.href, event);
+                    console.error('Error loading stylesheet:', event.target.href, event);
                 } else {
                     console.error('Unhandled error:', event);
                 }
             }, true); // Use capturing phase to catch errors early
         });
+
+        let currentStep = 0;
+        const totalSteps = 5;
+
+        // Initialize story navigation (progress dots)
+        function initStoryNavigation() {
+            const nav = document.getElementById('storyNav');
+            for (let i = 0; i < totalSteps; i++) {
+                const dot = document.createElement('div');
+                dot.className = `nav-dot ${i === 0 ? 'active' : ''}`;
+                dot.addEventListener('click', () => goToStep(i));
+                nav.appendChild(dot);
+            }
+        }
+
+        // Scroll listener for updating progress bar and active step
+        function handleScroll() {
+            const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = `${scrollPercent * 100}%`;
+
+            const sections = document.querySelectorAll('.narrative-section');
+            const viewportMiddle = window.innerHeight / 2;
+
+            sections.forEach((section, index) => {
+                const rect = section.getBoundingClientRect();
+                const step = section.querySelector('.story-step');
+                const navDot = document.querySelectorAll('.nav-dot')[index];
+
+                if (rect.top < viewportMiddle && rect.bottom > viewportMiddle) {
+                    if (currentStep !== index) {
+                        currentStep = index;
+                        updateActiveStep(index);
+                        loadStoryChart(index); // optional, only if you use it
+                    }
+                }
+            });
+        }
+
+        // Update active classes on dots and steps
+        function updateActiveStep(stepIndex) {
+            document.querySelectorAll('.nav-dot').forEach((dot, i) => {
+                dot.classList.toggle('active', i === stepIndex);
+            });
+
+            document.querySelectorAll('.story-step').forEach((step, i) => {
+                step.classList.toggle('active', i === stepIndex);
+            });
+        }
+
+        // Scroll to section when dot is clicked
+        function goToStep(stepIndex) {
+            const sections = document.querySelectorAll('.narrative-section');
+            if (sections[stepIndex]) {
+                sections[stepIndex].scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // On page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initStoryNavigation();
+
+            let scrollTimeout;
+            window.addEventListener('scroll', () => {
+                if (scrollTimeout) clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(handleScroll, 16);
+            });
+
+            handleScroll(); // Trigger once initially
+        });
     </script>
 </body>
+
 </html>
