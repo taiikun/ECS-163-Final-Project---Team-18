@@ -6,10 +6,7 @@ const margin = {top: 20, right: 80, bottom: 60, left: 80};
 const width = 1100 - margin.left - margin.right;
 const height = 500 - margin.top - margin.bottom;
 
-const colorSchemes = {
-    'layoffs-location': d3.scaleOrdinal(d3.schemePaired),
-    'salary-role': d3.scaleOrdinal(d3.schemePaired)
-};
+const colorScheme = d3.scaleOrdinal(d3.schemePaired);
 
 let parsedSalaryData = null;
 const FADE_DURATION = 300;
@@ -95,73 +92,6 @@ async function processSalaryData(aggregation) {
     return processedData;
 }
 
-async function loadLayoffData() {
-    const response = await fetch('tech_layoffs_Q2_2024.csv'); 
-    const text = await response.text();
-    const rows = d3.csvParse(text);
-    
-    const dataset = document.getElementById('dataset-select').value;
-    const aggregation = document.getElementById('aggregation-select').value;
-    
-    return processLayoffData(rows, dataset, aggregation);
-}
-
-function processLayoffData(rows, dataset, aggregation) {
-    const grouped = d3.group(rows, 
-        d => {
-            const date = new Date(d.Date_layoffs);
-            if (isNaN(date.getTime()) || !d.Year) { 
-                return "Unknown Period"; 
-            }
-            if (aggregation === 'yearly') {
-                return d.Year.toString();
-            } else {
-                return `${d.Year}-Q${Math.floor(date.getMonth() / 3) + 1}`;
-            }
-        },
-        d => {
-            switch(dataset) {
-                case 'layoffs-location': return d.Region || d.Location_HQ || 'Unknown';
-                default: return 'Unknown';
-            }
-        }
-    );
-    
-    const categoryTotals = {};
-    for (const [period, categoryMap] of grouped) {
-        if (period === "Unknown Period") continue; 
-        for (const [category, records] of categoryMap) {
-            const totalLayoffs = d3.sum(records, d => +d.Laid_Off || 0);
-            if (totalLayoffs > 0) {
-                categoryTotals[category] = (categoryTotals[category] || 0) + totalLayoffs;
-            }
-        }
-    }
-    
-    const topCategories = Object.entries(categoryTotals)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 25)
-        .map(([category]) => category);
-    
-    const data = [];
-    for (const [period, categoryMap] of grouped) {
-        if (period === "Unknown Period") continue;
-        for (const [category, records] of categoryMap) {
-            if (!topCategories.includes(category)) continue;
-            const totalLayoffs = d3.sum(records, d => +d.Laid_Off || 0); 
-            if (totalLayoffs > 0) {
-                data.push({
-                    period: period,
-                    category: category,
-                    value: totalLayoffs
-                });
-            }
-        }
-    }
-    
-    return data;
-}
-
 function createStreamGraph(data) {
     d3.select("#chart-container").html('');
     
@@ -219,16 +149,13 @@ function createStreamGraph(data) {
         .y1(d => yScale(d[1]))
         .curve(d3.curveCardinal);
     
-    const currentDatasetType = document.getElementById('dataset-select').value;
-    const colorScale = colorSchemes[currentDatasetType] || d3.scaleOrdinal(d3.schemeCategory10);
-    
     g.selectAll(".stream-area") 
         .data(series)
         .enter()
         .append("path")
         .attr("class", "stream-area")
         .attr("d", area)
-        .attr("fill", d => colorScale(d.key))
+        .attr("fill", d => colorScheme(d.key))
         .attr("opacity", 0.8)
         .on("mouseover", function(event, d) {
             g.selectAll(".stream-area").transition().duration(150).attr("opacity", 0.3);
@@ -248,9 +175,7 @@ function createStreamGraph(data) {
             tooltip.html(`
                 <strong>${d.key}</strong><br>
                 Period: ${invertedX}<br>
-                ${currentDatasetType.includes('salary') ? 
-                  `Average Salary: $${value.toLocaleString()}` : 
-                  `Layoffs: ${value.toLocaleString()}`}
+                Average Salary: $${value.toLocaleString()}
             `)
             .style("left", (event.pageX + 15) + "px")
             .style("top", (event.pageY - 15) + "px")
@@ -271,9 +196,6 @@ function createStreamGraph(data) {
         .attr("dx", "-.8em")
         .attr("dy", ".15em");
     
-    const yAxisLabel = currentDatasetType.includes('salary') ? 
-        "Average Salary ($)" : "Number of Layoffs";
-    
     g.append("text")
         .attr("class", "axis-label y-axis-label")
         .attr("transform", "rotate(-90)")
@@ -281,7 +203,7 @@ function createStreamGraph(data) {
         .attr("x", 0 - (height / 2))
         .attr("dy", "1em")
         .style("text-anchor", "middle")
-        .text(yAxisLabel);
+        .text("Average Salary ($)");
     
     g.append("text")
         .attr("class", "chart-title")
@@ -290,10 +212,9 @@ function createStreamGraph(data) {
         .style("text-anchor", "middle")
         .style("font-size", "16px")
         .style("font-weight", "500")
-        .text(currentDatasetType.includes('salary') ? 
-              "Average Tech Salaries by Job Role" : "Tech Industry Layoffs Over Time");
+        .text("Average Tech Salaries by Job Role");
 
-    createLegend(categories, colorScale);
+    createLegend(categories, colorScheme);
 
     svg.transition()
         .duration(FADE_DURATION)
@@ -342,14 +263,11 @@ function animateTimeline() {
     svg.selectAll(".axis").interrupt();
     
     switch(currentAnimation) {
-
         case 1:
             animateByCategory();
             break;
+    }
 }
-    
-}
-
 
 // Animation: Reveal by category (staggered)
 function animateByCategory() {
@@ -365,7 +283,6 @@ function animateByCategory() {
     // Fade in axis
     animateAxis();
 }
-
 
 // Helper function to animate axis
 function animateAxis() {
@@ -383,16 +300,14 @@ function animateAxis() {
         .style("opacity", 1);
 }
 
-
 async function updateVisualization() {
-    const dataset = document.getElementById('dataset-select').value;
     const aggregation = document.getElementById('aggregation-select').value;
     
     const chartContainer = d3.select("#chart-container");
     const existingSvg = chartContainer.select("svg");
 
     if (existingSvg.empty()) {
-        loadAndDrawData(dataset, aggregation, chartContainer);
+        loadAndDrawData(aggregation, chartContainer);
     } else {
         existingSvg.transition()
             .duration(FADE_DURATION)
@@ -400,22 +315,17 @@ async function updateVisualization() {
             .end() 
             .then(() => {
                 chartContainer.html('<div class="loading">Loading data...</div>');
-                loadAndDrawData(dataset, aggregation, chartContainer);
+                loadAndDrawData(aggregation, chartContainer);
             })
             .catch(() => {
                 chartContainer.html('<div class="loading">Loading data...</div>');
-                loadAndDrawData(dataset, aggregation, chartContainer);
+                loadAndDrawData(aggregation, chartContainer);
             });
     }
 }
 
-async function loadAndDrawData(dataset, aggregation, chartContainer) {
-    let data;
-    if (dataset === 'salary-role') {
-        data = await processSalaryData(aggregation);
-    } else {
-        data = await loadLayoffData(); 
-    }
+async function loadAndDrawData(aggregation, chartContainer) {
+    const data = await processSalaryData(aggregation);
     
     if (data && data.length > 0) {
         currentData = data;
@@ -425,15 +335,11 @@ async function loadAndDrawData(dataset, aggregation, chartContainer) {
     }
 }
 
-document.getElementById('dataset-select').addEventListener('change', updateVisualization);
 document.getElementById('aggregation-select').addEventListener('change', updateVisualization);
 document.getElementById('animate-btn').addEventListener('click', animateTimeline);
 
 async function testFileAccess() {
-    const files = ['global_tech_salary.csv', 'tech_layoffs_Q2_2024.csv']; 
-    for (const file of files) {
-        const response = await fetch(file);
-    }
+    const response = await fetch('global_tech_salary.csv');
 }
 
 testFileAccess().then(() => {

@@ -82,26 +82,21 @@
             font-weight: 600;
         }
 
-        .bg-gradient-1 {
-            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+        .bg-gradient-1 { 
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         }
-
-        .bg-gradient-2 {
-            background: linear-gradient(135deg, #ff6a5b 0%, #ff9472 100%);
+        .bg-gradient-2 { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-
-        .bg-gradient-3 {
-            background: linear-gradient(135deg, #1fa2ff 0%, #12d8fa 50%, #a6ffcb 100%);
+        .bg-gradient-3 { 
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
-
-        .bg-gradient-4 {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        .bg-gradient-4 { 
+            background: linear-gradient(135deg, #FC466B 0%, #3F5EFB 100%);
         }
-
-        .bg-gradient-5 {
-            background: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
+        .bg-gradient-5 { 
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
         }
-
         .scroll-prompt {
             position: absolute;
             bottom: -275px;
@@ -159,16 +154,6 @@
             }
         }
 
-        /* Progress bar at top of screen */
-        .progress-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            transition: width 0.3s ease;
-            z-index: 1001;
-        }
 
         /* Dot navigation on right side */
         .story-nav {
@@ -470,9 +455,6 @@
 </head>
 
 <body>
-    <!-- Progress Bar -->
-    <div id="progressBar" class="progress-bar"></div>
-
     <!-- Story Navigation Dots -->
     <div id="storyNav" class="story-nav"></div>
 
@@ -485,11 +467,11 @@
                 <div class="story-text" style="grid-column: span 2; text-align: center;">
                     <h1>The Great Tech Shift: 2020–2024</h1>
                     <p>The tech industry underwent one of its most dramatic transformations in recent memory.</p>
-                    <p>This dashboard reveals how tech careers transformed—and where they’re headed next.</p>
+                    <p>This dashboard reveals how tech careers transformed—and where they're headed next.</p>
                 </div>
             </div>
             <div class="scroll-prompt">
-                Scroll to uncover the trends shaping tech careers
+                Scroll to uncover the trends that are shaping tech careers
             </div>
         </div>
     </section>
@@ -570,29 +552,22 @@
         <!-- Main Interactive Stream Graph -->
         <div class="viz-card">
             <div class="viz-header">
-                <h3>Interactive Timeline</h3>
-                <p>Switch between salary trends and layoff patterns to see the full picture of the tech job market
-                    evolution</p>
+                <h3>Tech Salary Evolution</h3>
+                <p>Explore how salaries for different tech roles have evolved over time</p>
             </div>
             <div class="viz-content">
                 <div class="controls-container">
                     <div class="controls">
                         <div class="control-group">
-                            <label for="dataset-select">Dataset:</label>
-                            <select id="dataset-select">
-                                <option value="salary-role">Salary by Job Role</option>
-                                <option value="layoffs-location">Layoffs by Location</option>
-                            </select>
-                        </div>
-                        <div class="control-group">
                             <label for="aggregation-select">Time Period:</label>
                             <select id="aggregation-select">
-                                <option value="yearly">Yearly</option>
-                                <option value="quarterly">Quarterly</option>
+                               <option value="quarterly">Quarterly</option> 
+                               <option value="yearly">Yearly</option>
+                                
                             </select>
                         </div>
                         <div class="control-group">
-                            <label> </label> <!-- Empty label for alignment -->
+                            <label> </label> <!-- Empty label for alignment -->
                             <button id="animate-btn" title="Click to animate the visualization">Animate
                                 Timeline</button>
                         </div>
@@ -735,11 +710,9 @@
             }
         }
 
-        // Scroll listener for updating progress bar and active step
+        // Scroll listener for updating  active step
         function handleScroll() {
             const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
-            const progressBar = document.getElementById('progressBar');
-            progressBar.style.width = `${scrollPercent * 100}%`;
 
             const sections = document.querySelectorAll('.narrative-section');
             const viewportMiddle = window.innerHeight / 2;
@@ -753,7 +726,7 @@
                     if (currentStep !== index) {
                         currentStep = index;
                         updateActiveStep(index);
-                        loadStoryChart(index); // optional, only if you use it
+                        loadStoryChart(index);
                     }
                 }
             });
