@@ -5,6 +5,8 @@ function init_line_chart_jolts_information() {
         height = +svg.attr("height") - margin.top - margin.bottom,
         chart = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
+    const tooltip = d3.select("#tooltip");
+
     d3.csv("jolts_information_job_openings.csv").then(rawData => {
         const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         const parseDate = d3.timeParse("%Y-%b");
@@ -23,7 +25,7 @@ function init_line_chart_jolts_information() {
 
         const x = d3.scaleTime()
             .domain(d3.extent(data, d => d.date))
-            .range([0, width])
+            .range([0, width]);
 
         const y = d3.scaleLinear()
             .domain([0, d3.max(data, d => d.value)]).nice()
@@ -32,10 +34,6 @@ function init_line_chart_jolts_information() {
         const yGrid = d3.axisLeft(y)
             .tickSize(-width)
             .tickFormat("");
-
-        const xAxisMonths = d3.axisBottom(x)
-            .ticks(d3.timeMonth.every(1))
-            .tickFormat(d3.timeFormat("%b"));
 
         const xAxisYears = d3.axisBottom(x)
             .ticks(d3.timeYear.every(1))
@@ -52,7 +50,7 @@ function init_line_chart_jolts_information() {
             .attr("dy", "1.75em")
             .style("text-anchor", "middle")
             .style("font-weight", "bold");
-        
+
         chart.append("g")
             .attr("class", "grid")
             .call(yGrid)
@@ -90,15 +88,6 @@ function init_line_chart_jolts_information() {
             .attr("stroke-width", 2)
             .attr("d", line);
 
-        const tooltip = d3.select("body").append("div")
-            .style("position", "absolute")
-            .style("background", "#fff")
-            .style("padding", "6px 8px")
-            .style("border", "1px solid #ccc")
-            .style("border-radius", "4px")
-            .style("pointer-events", "none")
-            .style("opacity", 0);
-
         chart.selectAll("circle")
             .data(data)
             .enter()
@@ -108,11 +97,14 @@ function init_line_chart_jolts_information() {
             .attr("r", 4)
             .attr("fill", "steelblue")
             .on("mouseover", (event, d) => {
-                tooltip.transition().duration(200).style("opacity", 0.9);
-                tooltip.html(`${d3.timeFormat("%B %Y")(d.date)}<br><b>${d.value}</b>k openings`)
+                tooltip
                     .style("left", (event.pageX + 10) + "px")
-                    .style("top", (event.pageY - 28) + "px");
+                    .style("top", (event.pageY - 28) + "px")
+                    .style("opacity", 1)
+                    .html(`${d3.timeFormat("%B %Y")(d.date)}<br><b>${d.value}</b>k openings`);
             })
-            .on("mouseout", () => tooltip.transition().duration(500).style("opacity", 0));
+            .on("mouseout", () => {
+                tooltip.style("opacity", 0);
+            });
     });
 }

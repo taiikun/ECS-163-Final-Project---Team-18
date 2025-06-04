@@ -5,6 +5,8 @@ function init_bar_chart_layoffs_by_company() {
         height = +svg.attr("height") - margin.top - margin.bottom,
         chart = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
+    const tooltip = d3.select("#tooltip");
+
     const x = d3.scaleBand().padding(0.2).range([0, width]);
     const y = d3.scaleLinear().range([height, 0]);
 
@@ -47,6 +49,7 @@ function init_bar_chart_layoffs_by_company() {
             .text(d => d);
 
         select.on("change", () => updateChart(+select.node().value));
+
         const buttonContainer = d3.select("#yearButtonsLayoffsByCompany");
 
         years.forEach(year => {
@@ -78,7 +81,6 @@ function init_bar_chart_layoffs_by_company() {
 
             yAxisGroup.call(d3.axisLeft(y));
 
-
             const bars = chart.selectAll(".bar-company").data(topCompanies, d => d[0]);
 
             bars.exit()
@@ -102,7 +104,21 @@ function init_bar_chart_layoffs_by_company() {
                 .attr("width", x.bandwidth())
                 .attr("y", y(0))
                 .attr("height", 0)
-                .style("opacity", 0);
+                .style("opacity", 0)
+                .on("mouseover", (event, d) => {
+                    tooltip.transition().duration(200).style("opacity", 1);
+                    tooltip.html(`<strong>${d[0]}</strong><br>Layoffs: ${d[1].toLocaleString()}`)
+                        .style("left", (event.pageX + 15) + "px")
+                        .style("top", (event.pageY - 15) + "px");
+                })
+                .on("mousemove", (event) => {
+                    tooltip
+                        .style("left", (event.pageX + 15) + "px")
+                        .style("top", (event.pageY - 15) + "px");
+                })
+                .on("mouseout", () => {
+                    tooltip.transition().duration(300).style("opacity", 0);
+                });
 
             barsEnter.transition().duration(1000)
                 .attr("y", d => y(d[1]))
@@ -113,9 +129,6 @@ function init_bar_chart_layoffs_by_company() {
                     buttonContainer.selectAll("button").attr("disabled", null);
                 });
 
-            barsEnter.append("title")
-                .text(d => `${d[0]}: ${d[1]} layoffs`);
-
             buttonContainer.selectAll("button")
                 .classed("active", false);
 
@@ -124,7 +137,7 @@ function init_bar_chart_layoffs_by_company() {
                     return +this.textContent === selectedYear;
                 })
                 .classed("active", true);
-                    }
+        }
 
         updateChart(years[0]);
     });
