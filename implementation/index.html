@@ -283,7 +283,7 @@
                 .scale(700);
 
             const path = d3.geoPath().projection(projection);
-            const colorScale = d3.scaleSequentialLog(d3.interpolateReds).domain([1, 50000]);
+            const colorScale = d3.scaleSequentialLog(d3.interpolateTurbo).domain([1, 50000]);
             const regionColors = d3.scaleOrdinal()
                 .domain(["Northeast", "Midwest", "South", "West", "Unknown"])
                 .range(["#e1f5fe", "#f3e5f5", "#fff3e0", "#e8f5e8", "#fafafa"]);
@@ -718,7 +718,7 @@
                 .scale(900);
 
             const path = d3.geoPath().projection(projection);
-            const colorScale = d3.scaleSequentialLog(d3.interpolateReds).domain([1, 50000]);
+            const colorScale = d3.scaleSequentialLog(d3.interpolateTurbo).domain([1, 50000]);
             const regionColors = d3.scaleOrdinal()
                 .domain(["Northeast", "Midwest", "South", "West", "Unknown"])
                 .range(["#e1f5fe", "#f3e5f5", "#fff3e0", "#e8f5e8", "#fafafa"]);
