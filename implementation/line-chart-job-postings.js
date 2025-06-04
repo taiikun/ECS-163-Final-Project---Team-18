@@ -9,7 +9,7 @@ function init_line_chart_jolts_information(mode) {
 
     const svg = d3.select(chartId),
         margin = { top: 40, right: 60, bottom: 60, left: 60 },
-        width = +svg.attr("width") - margin.left - margin.right,
+        width = 650 - margin.left - margin.right,
         height = +svg.attr("height") - margin.top - margin.bottom,
         chart = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 

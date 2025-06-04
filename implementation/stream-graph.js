@@ -2,8 +2,8 @@ let currentData = null;
 let svg = null;
 let tooltip = d3.select("#tooltip");
 
-const margin = {top: 20, right: 80, bottom: 60, left: 80};
-const width = 1100 - margin.left - margin.right;
+const margin = {top: 20, right: 80, bottom: 80, left: 80};
+const width = 800 - margin.left - margin.right;
 const height = 500 - margin.top - margin.bottom;
 
 const colorScheme = d3.scaleOrdinal(d3.schemePaired);
@@ -142,7 +142,7 @@ function createStreamGraph(data) {
             d3.max(series, layer => d3.max(layer, d => d[1]))
         ])
         .range([height, 0]);    
-        
+
     const area = d3.area()
         .x(d => xScale(d.data.period))
         .y0(d => yScale(d[0]))
@@ -197,10 +197,6 @@ function createStreamGraph(data) {
         .attr("dx", "-.8em")
         .attr("dy", ".15em");
         
-    g.append("g")
-        .attr("class", "axis y-axis")
-        .call(d3.axisLeft(yScale));
-    
     g.append("text")
         .attr("class", "axis-label y-axis-label")
         .attr("transform", "rotate(-90)")
@@ -280,8 +276,8 @@ function animateByCategory() {
     
     paths.attr("opacity", 0)
         .transition()
-        .delay((d, i) => i * 300)
-        .duration(800)
+        .delay((d, i) => i * 800)
+        .duration(1200)
         .ease(d3.easeCubicOut)
         .attr("opacity", 0.8);
     
@@ -294,8 +290,8 @@ function animateAxis() {
     svg.selectAll(".axis text")
         .style("opacity", 0)
         .transition()
-        .delay((d, i) => i * 100)
-        .duration(500)
+        .delay((d, i) => i * 500)
+        .duration(2400)
         .style("opacity", 1);
     
     svg.selectAll(".axis-label, .chart-title")
