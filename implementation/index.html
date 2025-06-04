@@ -258,7 +258,10 @@
                     await createStoryLineChart();
                     break;
                 case 5:
-                    await createStoryDonutChart();
+                    if (!document.querySelector("#story-donut-chart").dataset.rendered) {
+                        init_donut_chart_remote_vs_onsite("#story-donut-chart");
+                        document.querySelector("#story-donut-chart").dataset.rendered = "true";
+                    }
                     break;
             }
         }
@@ -826,113 +829,7 @@
                 .call(d3.axisLeft(y))
                 .selectAll("text")
                 .style("fill", "white");
-        }
-
-        // Create donut chart for story
-        async function createStoryDonutChart() {
-            if (d3.select("#story-donut-chart").selectAll("*").size() > 0) return;
-
-            try {
-                const response = await fetch('global_tech_salary.csv');
-                const text = await response.text();
-                const lines = text.split('\n').filter(line => line.trim());
-                
-                const workTypeCounts = { Remote: 0, Hybrid: 0, Onsite: 0 };
-
-                for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i].replace(/^"|"$/g, '');
-                    const parts = line.split(',').map(p => p.replace(/^"|"$/g, '').trim());
-                    
-                    if (parts.length >= 9 && !isNaN(parts[8])) {
-                        const ratio = parseInt(parts[8]);
-                        if (ratio === 100) workTypeCounts.Remote++;
-                        else if (ratio === 50) workTypeCounts.Hybrid++;
-                        else if (ratio === 0) workTypeCounts.Onsite++;
-                    }
-                }
-
-                createDonutChartForStory(workTypeCounts, "#story-donut-chart");
-            } catch (error) {
-                console.error('Error loading donut chart data:', error);
-            }
-        }
-
-        function createDonutChartForStory(workTypeCounts, containerSelector) {
-            const container = d3.select(containerSelector);
-            container.html('');
-            
-            const width = 400;
-            const height = 400;
-            const radius = Math.min(width, height) / 2;
-
-            const svg = container
-                .append("svg")
-                .attr("width", width)
-                .attr("height", height)
-                .style("display", "block")
-                .style("margin", "0 auto")
-                .append("g")
-                .attr("transform", `translate(${width / 2}, ${height / 2})`);
-
-            const color = d3.scaleOrdinal()
-                .domain(["Remote", "Hybrid", "Onsite"])
-                .range(["#667eea", "#ff7f0e", "#2ca02c"]);
-
-            const pie = d3.pie()
-                .sort(null)
-                .value(d => d[1]);
-
-            const arc = d3.arc()
-                .innerRadius(radius * 0.5)
-                .outerRadius(radius * 0.8);
-
-            const arcHover = d3.arc()
-                .innerRadius(radius * 0.5)
-                .outerRadius(radius * 0.85);
-
-            const tooltip = d3.select("#tooltip");
-            const data_ready = pie(Object.entries(workTypeCounts));
-
-            svg.selectAll("path")
-                .data(data_ready)
-                .enter()
-                .append("path")
-                .attr("d", arc)
-                .attr("fill", d => color(d.data[0]))
-                .attr("stroke", "white")
-                .style("stroke-width", "2px")
-                .on("mouseover", function (event, d) {
-                    d3.select(this)
-                        .transition()
-                        .duration(200)
-                        .attr("d", arcHover);
-
-                    tooltip.html(`<strong>${d.data[0]}</strong><br>${d.data[1]} jobs`)
-                        .style("left", (event.pageX + 10) + "px")
-                        .style("top", (event.pageY - 25) + "px")
-                        .style("opacity", 1);
-                })
-                .on("mouseout", function () {
-                    d3.select(this)
-                        .transition()
-                        .duration(200)
-                        .attr("d", arc);
-
-                    tooltip.style("opacity", 0);
-                });
-
-            // Add labels
-            svg.selectAll("text")
-                .data(data_ready)
-                .enter()
-                .append("text")
-                .attr("transform", d => `translate(${arc.centroid(d)})`)
-                .attr("text-anchor", "middle")
-                .style("font-size", "14px")
-                .style("font-weight", "bold")
-                .style("fill", "white")
-                .text(d => d.data[0]);
-        }
+        }     
 
         // Interactive map function
         async function initInteractiveMap() {

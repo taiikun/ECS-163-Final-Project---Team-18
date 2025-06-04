@@ -1,9 +1,9 @@
-function init_donut_chart_remote_vs_onsite() {
-    const width = 400;
+function init_donut_chart_remote_vs_onsite(containerSelector = "#donutChartRemote") {    const width = 400;
     const height = 400;
     const radius = Math.min(width, height) / 2;
 
-    const svg = d3.select("#donutChartRemote")
+    const svg = d3.select(containerSelector)
+
         .append("svg")
         .attr("width", width + 75)
         .attr("height", height + 40)
@@ -94,10 +94,12 @@ function init_donut_chart_remote_vs_onsite() {
                         .style("opacity", 0);
                 });
 
-            d3.select("#donutChartRemote")
+            d3.select(containerSelector)
+
                 .style("position", "relative");
 
-            const legend = d3.select("#donutChartRemote")
+            const legend = d3.select(containerSelector)
+
                 .append("div")
                 .attr("class", "legend")
                 .style("position", "absolute")
@@ -132,7 +134,8 @@ function init_donut_chart_remote_vs_onsite() {
         })
         .catch(err => {
             console.error("Failed to load or parse CSV:", err);
-            d3.select("#donutChartRemote")
+            d3.select(containerSelector)
+
                 .append("div")
                 .attr("class", "error")
                 .text("Error loading donut chart data.");
