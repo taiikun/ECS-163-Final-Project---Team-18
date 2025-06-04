@@ -9,32 +9,26 @@ const width = 1100 - margin.left - margin.right;
 const height = 500 - margin.top - margin.bottom;
 
 // Color schemes for different datasets
-// Assuming 'layoffs-industry' was removed as per previous requests.
-// If it's still needed, add its color scheme back.
 const colorSchemes = {
-    'layoffs-stage': d3.scaleOrdinal(d3.schemeSet2),
-    'layoffs-location': d3.scaleOrdinal(d3.schemeSet3),
+    'layoffs-location': d3.scaleOrdinal(d3.schemePaired),
     'salary-role': d3.scaleOrdinal(d3.schemePaired)
 };
 
 // Variables to store parsed data
 let parsedSalaryData = null;
 
-// Fade transition duration (New for fade effect)
+// Fade transition duration
 const FADE_DURATION = 300; // milliseconds
 
-// Parse the actual salary CSV data
+// Parse the salary CSV data
 async function loadSalaryData() {
     if (parsedSalaryData) return parsedSalaryData;
     
     try {
-        // Assuming global_tech_salary.csv is in the same directory or a 'data/' subdirectory
-        // Adjust path if necessary, e.g., 'data/global_tech_salary.csv'
         const response = await fetch('global_tech_salary.csv'); 
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status} for global_tech_salary.csv`);
         
         const text = await response.text();
-        console.log('Salary CSV loaded, parsing...');
         
         // Parse the CSV manually due to unusual formatting
         const lines = text.split('\n').filter(line => line.trim());
@@ -64,10 +58,6 @@ async function loadSalaryData() {
             }
         }
         
-        console.log(`Parsed ${data.length} salary records`);
-        if (data.length === 0) {
-            console.warn("No salary data parsed. Check CSV format and parsing logic.");
-        }
         parsedSalaryData = data;
         return data;
     } catch (error) {
@@ -89,10 +79,9 @@ async function processSalaryData(aggregation) {
     
     const topTitles = Object.entries(titleCounts)
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 8) // Top 8 job titles
+        .slice(0, 10) // Top 10 job titles
         .map(([title]) => title);
-    
-    console.log('Top job titles for salary:', topTitles);
+
     
     // Filter data to only include top titles
     const filteredData = rawData.filter(row => topTitles.includes(row.jobTitle));
@@ -107,8 +96,7 @@ async function processSalaryData(aggregation) {
         }
         const period = aggregation === 'yearly' ? 
             row.year.toString() : 
-            `${row.year}-Q${Math.floor(Math.random() * 4) + 1}`; // Simulate quarters if not present
-                                                              // Ideally, your salary data should have quarter info if quarterly aggregation is desired.
+            `${row.year}-Q${Math.floor(Math.random() * 4) + 1}`;
         
         const key = `${period}|${row.jobTitle}`;
         if (!grouped[key]) {
@@ -177,20 +165,36 @@ function processLayoffData(rows, dataset, aggregation) {
         },
         d => {
             switch(dataset) {
-                // 'layoffs-industry' case removed as per previous request.
-                // If it's needed, add: case 'layoffs-industry': return d.Industry || 'Unknown';
-                case 'layoffs-stage': return d.Stage || 'Unknown'; // Ensure 'Stage' column exists
                 case 'layoffs-location': return d.Region || d.Location_HQ || 'Unknown'; // Ensure these columns exist
                 default: return 'Unknown';
             }
         }
     );
     
-    // Convert to array format
+    // Calculate total layoffs per category (location)
+    const categoryTotals = {};
+    for (const [period, categoryMap] of grouped) {
+        if (period === "Unknown Period") continue; // Skip invalid periods
+        for (const [category, records] of categoryMap) {
+            const totalLayoffs = d3.sum(records, d => +d.Laid_Off || 0);
+            if (totalLayoffs > 0) {
+                categoryTotals[category] = (categoryTotals[category] || 0) + totalLayoffs;
+            }
+        }
+    }
+    
+    // Get top 25 categories by total layoffs
+    const topCategories = Object.entries(categoryTotals)
+        .sort((a, b) => b[1] - a[1]) // Sort by total layoffs in descending order
+        .slice(0, 25) // Take top 25
+        .map(([category]) => category);
+    
+    // Convert to array format, only including top 25 categories
     const data = [];
     for (const [period, categoryMap] of grouped) {
         if (period === "Unknown Period") continue; // Skip data with unknown periods
         for (const [category, records] of categoryMap) {
+            if (!topCategories.includes(category)) continue; // Only include top 25 categories
             const totalLayoffs = d3.sum(records, d => +d.Laid_Off || 0); // Ensure 'Laid_Off' column exists
             if (totalLayoffs > 0) {
                 data.push({
@@ -214,14 +218,13 @@ function createStreamGraph(data) {
         .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
-        .style("opacity", 0); // Start with opacity 0 for fade-in effect
+        .style("opacity", 0);
 
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
     
     // Get unique periods and categories
     const periods = [...new Set(data.map(d => d.period))].sort((a, b) => {
-        // Custom sort for "YYYY-QN" and "YYYY" formats
         const partsA = a.split('-Q');
         const partsB = b.split('-Q');
         const yearA = parseInt(partsA[0]);
@@ -230,7 +233,7 @@ function createStreamGraph(data) {
         if (partsA.length > 1 && partsB.length > 1) {
             return parseInt(partsA[1]) - parseInt(partsB[1]);
         }
-        return 0; // Should not happen if formats are consistent
+        return 0; 
     });
     const categories = [...new Set(data.map(d => d.category))];
     
@@ -247,7 +250,7 @@ function createStreamGraph(data) {
     // Create stack
     const stack = d3.stack()
         .keys(categories)
-        .offset(d3.stackOffsetWiggle); // Or d3.stackOffsetSilhouette for a different baseline
+        .offset(d3.stackOffsetWiggle);
     
     const series = stack(stackData);
     
@@ -275,14 +278,14 @@ function createStreamGraph(data) {
     const colorScale = colorSchemes[currentDatasetType] || d3.scaleOrdinal(d3.schemeCategory10); // Fallback
     
     // Draw streams
-    g.selectAll(".stream-area") // Changed from svg.selectAll to g.selectAll
+    g.selectAll(".stream-area") 
         .data(series)
         .enter()
         .append("path")
         .attr("class", "stream-area")
         .attr("d", area)
         .attr("fill", d => colorScale(d.key))
-        .attr("opacity", 0.8) // Initial opacity of streams themselves
+        .attr("opacity", 0.8)
         .on("mouseover", function(event, d) {
             // Highlight stream
             g.selectAll(".stream-area").transition().duration(150).attr("opacity", 0.3);
@@ -321,7 +324,7 @@ function createStreamGraph(data) {
         });
     
     // Add X axis
-    g.append("g") // Changed from svg.append to g.append
+    g.append("g")
         .attr("class", "axis x-axis")
         .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(xScale).tickFormat(d => d.length > 4 ? d.substring(2) : d )) // Shorten year-quarter labels
@@ -335,7 +338,7 @@ function createStreamGraph(data) {
     const yAxisLabel = currentDatasetType.includes('salary') ? 
         "Average Salary ($)" : "Number of Layoffs";
     
-    g.append("text") // Changed from svg.append to g.append
+    g.append("text")
         .attr("class", "axis-label y-axis-label")
         .attr("transform", "rotate(-90)")
         .attr("y", 0 - margin.left + 15) // Adjusted position
@@ -344,9 +347,8 @@ function createStreamGraph(data) {
         .style("text-anchor", "middle")
         .text(yAxisLabel);
     
-    // Add title
-    // Titles are now handled by index.html, but if you want a dynamic one:
-    /*
+   
+    // Title
     g.append("text") // Changed from svg.append to g.append
         .attr("class", "chart-title")
         .attr("x", width / 2)
@@ -356,12 +358,12 @@ function createStreamGraph(data) {
         .style("font-weight", "500")
         .text(currentDatasetType.includes('salary') ? 
               "Average Tech Salaries by Job Role" : "Tech Industry Layoffs Over Time");
-    */
+
     
     // Create legend
     createLegend(categories, colorScale);
 
-    // Fade in the new chart (New for fade effect)
+    // Fade in the new chart
     svg.transition()
         .duration(FADE_DURATION)
         .style("opacity", 1);
@@ -382,7 +384,7 @@ function createLegend(categories, colorScale) {
                 d3.select(this).style("opacity", newOpacity);
                 
                 // Update stream visibility using the 'g' element
-                svg.select("g").selectAll(".stream-area") // Ensure we select within the main 'g'
+                svg.select("g").selectAll(".stream-area") 
                     .filter(d => d.key === category)
                     .transition().duration(FADE_DURATION) // Add transition to hide/show
                     .style("display", isHidden ? "block" : "none")
@@ -406,7 +408,7 @@ function animateTimeline() {
     alert("Timeline animation feature is not yet implemented.");
 }
 
-// Updated function to handle chart transitions (New for fade effect)
+
 async function updateVisualization() {
     const dataset = document.getElementById('dataset-select').value;
     const aggregation = document.getElementById('aggregation-select').value;
@@ -414,16 +416,14 @@ async function updateVisualization() {
     const chartContainer = d3.select("#chart-container");
     const existingSvg = chartContainer.select("svg");
 
-    if (existingSvg.empty()) { // Initial load or if chart was previously cleared
-        // The static loading message from index.html is shown initially.
-        // loadAndDrawData will replace it once data is ready or show an error.
+    if (existingSvg.empty()) {
+        
         loadAndDrawData(dataset, aggregation, chartContainer);
     } else {
-        // Fade out existing chart before loading new data (New for fade effect)
         existingSvg.transition()
             .duration(FADE_DURATION)
             .style("opacity", 0)
-            .end() // .end() returns a promise that resolves when transition ends
+            .end() 
             .then(() => {
                 chartContainer.html('<div class="loading">Loading data...</div>'); // Show loading message after fade out
                 loadAndDrawData(dataset, aggregation, chartContainer);
@@ -437,13 +437,7 @@ async function updateVisualization() {
     }
 }
 
-// Helper function to load data and draw the chart (New for fade effect)
 async function loadAndDrawData(dataset, aggregation, chartContainer) {
-    // If the chart container doesn't already have a loading message (e.g. initial load where index.html provides one)
-    // and there's no SVG, it means we are at the very start.
-    // The initial loading message in index.html handles the first display.
-    // This function is primarily concerned with loading data and then calling createStreamGraph.
-    // createStreamGraph will clear the container (including any loading message) before drawing.
 
     try {
         let data;
@@ -477,10 +471,6 @@ document.getElementById('dataset-select').addEventListener('change', updateVisua
 document.getElementById('aggregation-select').addEventListener('change', updateVisualization);
 document.getElementById('animate-btn').addEventListener('click', animateTimeline);
 
-// Initial load
-console.log('Starting visualization...');
-// console.log('Current URL:', window.location.href); // Original comment
-// console.log('Looking for files in:', window.location.origin + window.location.pathname.replace(/[^\/]*$/, '')); // Original comment
 
 // Test if files are accessible (optional, for debugging)
 async function testFileAccess() {
