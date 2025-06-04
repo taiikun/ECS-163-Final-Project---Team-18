@@ -99,10 +99,12 @@
 
         .visualization-grid {
             display: grid;
-            grid-template-columns: 1fr;
+            /* Adjust grid columns for potentially 4 items.
+               Could be 2x2 on wider screens or remain 1fr for stacking. */
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); /* Responsive grid */
             gap: 40px;
-            max-width: 1400px;
-            margin: 0 auto;
+            max-width: 1400px; /* Max width of the grid container */
+            margin: 40px auto 0 auto; /* Center the grid */
         }
 
         .viz-card {
@@ -111,6 +113,8 @@
             overflow: hidden;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
+            display: flex; /* For better internal alignment if needed */
+            flex-direction: column; /* Stack header and content */
         }
 
         .viz-card:hover {
@@ -136,12 +140,27 @@
 
         .viz-content {
             padding: 30px;
+            flex-grow: 1; /* Allow content to take available space */
+            display: flex; /* For centering chart if needed */
+            flex-direction: column;
+            align-items: center; /* Center chart horizontally */
+        }
+        
+        
+        .viz-content svg, .viz-content div[id^="chart"], .viz-content div[id^="donutChartRemote"] {
+            width: 100%;
+            max-width: 800px; /
+            display: block; 
+            margin-left: auto;
+            margin-right: auto;
         }
 
-         #chart-container {
+
+         #chart-container { 
             display: flex;
             justify-content: center;
             align-items: center;
+            width: 100%; 
         }
 
         .tooltip {
@@ -245,6 +264,9 @@
                 flex-direction: column;
                 gap: 20px;
             }
+            .visualization-grid {
+                grid-template-columns: 1fr; /* Stack cards on smaller screens */
+            }
         }
     </style>
 </head>
@@ -280,12 +302,12 @@
                             </select>
                         </div>
                         <div class="control-group">
-                            <label> </label>
+                            <label> </label> <!-- Empty label for alignment -->
                             <button id="animate-btn" title="Click to animate the visualization">Animate Timeline</button>
                         </div>
                     </div>
                 </div>
-                <div id="chart-container">
+                <div id="chart-container"> <!-- Container for StreamGraph SVG -->
                     <div class="loading">Loading interactive visualization...</div>
                 </div>
                 <div id="legend" class="legend"></div>
@@ -300,7 +322,7 @@
                     <p>See which companies had the most layoffs by year—essential intel for evaluating job stability</p>
                 </div>
                 <div class="viz-content">
-                    <div id="yearSelectLayoffsByCompany" style="display: none;">
+                    <div id="yearSelectLayoffsByCompany" style="display: none;"> <!-- This seems unused, keeping for now -->
                         <select></select>
                     </div>
                     <div id="yearButtonsLayoffsByCompany"></div>
@@ -328,49 +350,83 @@
                     <svg id="lineChartJOLTS" width="800" height="400"></svg>
                 </div>
             </div>
-        </div>
-    </section>
 
+            <div class="viz-card">
+                <div class="viz-header">
+                    <h3>Remote vs Hybrid vs Onsite (2023)</h3>
+                    <p>Distribution of job types in the tech industry.</p>
+                </div>
+                <div class="viz-content">
+                    <div id="donutChartRemote" style="width: 100%; height: 400px;"></div> <!-- Donut chart container -->
+                </div>
+            </div>
+        </div>
+    </section> <!-- End of interactive-section -->
+    
     <div class="tooltip" id="tooltip"></div>
 
+    <!-- Scripts -->
     <script src="stream-graph.js"></script>
     <script src="bar-chart-layoffs-by-company.js"></script>
     <script src="bar-chart-layoffs-by-location.js"></script>
     <script src="line-chart-job-postings.js"></script>
+    <script src="donut-chart-remote-vs-onsite.js"></script> 
 
     <script>
-        // Initialize visualizations
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Initializing interactive visualizations...');
 
-            // Initialize main interactive visualization
+            // Initialize main interactive visualization (StreamGraph)
+            // The setTimeout might not be strictly necessary if scripts are at the end,
+            // but can sometimes help ensure everything is ready.
             setTimeout(() => {
                 if (typeof updateVisualization === 'function') {
                     console.log('Loading main stream graph...');
-                    updateVisualization();
+                    updateVisualization(); // This should handle creating SVG in #chart-container
                 } else {
-                    console.error('updateVisualization function not found');
+                    console.error('updateVisualization function (for stream graph) not found');
                 }
 
                 // Initialize secondary charts
                 if (typeof init_bar_chart_layoffs_by_company === 'function') {
                     console.log('Loading company bar chart...');
                     init_bar_chart_layoffs_by_company();
+                } else {
+                    console.error('init_bar_chart_layoffs_by_company function not found');
                 }
+
                 if (typeof init_bar_chart_layoffs_by_location === 'function') {
                     console.log('Loading location bar chart...');
                     init_bar_chart_layoffs_by_location();
+                } else {
+                    console.error('init_bar_chart_layoffs_by_location function not found');
                 }
+
                 if (typeof init_line_chart_jolts_information === 'function') {
                     console.log('Loading JOLTS line chart...');
                     init_line_chart_jolts_information();
+                } else {
+                    console.error('init_line_chart_jolts_information function not found');
                 }
-            }, 500);
 
-            // Error handling for missing files
-            window.addEventListener('error', (e) => {
-                console.error('Error loading resource:', e);
-            });
+                if (typeof init_donut_chart_remote_vs_onsite === 'function') {
+                    console.log('Loading Donut chart (Remote vs Onsite)...');
+                    init_donut_chart_remote_vs_onsite();
+                } else {
+                    console.error('init_donut_chart_remote_vs_onsite function not found');
+                }
+            }, 500); // A small delay can sometimes help ensure DOM elements are fully ready.
+
+            // Global error handling for missing resources (optional but good practice)
+            window.addEventListener('error', (event) => {
+                if (event.target.tagName === 'SCRIPT') {
+                     console.error('Error loading script:', event.target.src, event);
+                } else if (event.target.tagName === 'LINK') {
+                     console.error('Error loading stylesheet:', event.target.href, event);
+                } else {
+                    console.error('Unhandled error:', event);
+                }
+            }, true); // Use capturing phase to catch errors early
         });
     </script>
 </body>
