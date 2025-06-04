@@ -44,12 +44,12 @@ function init_line_chart_jolts_information() {
         const yAxis = d3.axisLeft(y);
 
         chart.append("g")
-            .attr("transform", `translate(0,${height - 25})`)
+            .attr("transform", `translate(0,${height})`)
             .call(xAxisYears)
             .selectAll("text")
-            .attr("dy", "1.75em")
-            .style("text-anchor", "middle")
-            .style("font-weight", "bold");
+            .style("font-family", "sans-serif")
+            .style("font-size", "12px")
+            .style("font-weight", "500");
 
         chart.append("g")
             .attr("class", "grid")
@@ -58,14 +58,20 @@ function init_line_chart_jolts_information() {
             .attr("stroke", "#ccc")
             .attr("stroke-dasharray", "2,2");
 
-        chart.append("g").call(yAxis);
+        chart.append("g")
+            .call(yAxis)
+            .selectAll("text")
+            .style("font-family", "sans-serif")
+            .style("font-size", "12px");
 
         chart.append("text")
             .attr("class", "x label")
             .attr("text-anchor", "middle")
             .attr("x", width / 2)
             .attr("y", height + margin.bottom - 10)
-            .style("font-size", "12px")
+            .style("font-size", "13px")
+            .style("font-family", "sans-serif")
+            .style("font-weight", "500")
             .text("Date");
 
         chart.append("text")
@@ -74,18 +80,21 @@ function init_line_chart_jolts_information() {
             .attr("transform", "rotate(-90)")
             .attr("x", -height / 2)
             .attr("y", -margin.left + 15)
-            .style("font-size", "12px")
+            .style("font-size", "13px")
+            .style("font-family", "sans-serif")
+            .style("font-weight", "500")
             .text("Job Openings (Thousands)");
 
         const line = d3.line()
             .x(d => x(d.date))
-            .y(d => y(d.value));
+            .y(d => y(d.value))
+            .curve(d3.curveMonotoneX);
 
         chart.append("path")
             .datum(data)
             .attr("fill", "none")
-            .attr("stroke", "steelblue")
-            .attr("stroke-width", 2)
+            .attr("stroke", "#1f77b4")
+            .attr("stroke-width", 2.5)
             .attr("d", line);
 
         chart.selectAll("circle")
@@ -95,15 +104,31 @@ function init_line_chart_jolts_information() {
             .attr("cx", d => x(d.date))
             .attr("cy", d => y(d.value))
             .attr("r", 4)
-            .attr("fill", "steelblue")
-            .on("mouseover", (event, d) => {
+            .attr("fill", "#1f77b4")
+            .style("cursor", "pointer")
+            .on("mouseover", function(event, d) {
+                d3.select(this)
+                    .transition()
+                    .duration(150)
+                    .attr("r", 7)
+                    .attr("fill", "#ff7f0e");
+
                 tooltip
                     .style("left", (event.pageX + 10) + "px")
                     .style("top", (event.pageY - 28) + "px")
                     .style("opacity", 1)
-                    .html(`${d3.timeFormat("%B %Y")(d.date)}<br><b>${d.value}</b>k openings`);
+                    .html(`
+                        <strong>${d3.timeFormat("%B %Y")(d.date)}</strong><br>
+                        ${d.value.toLocaleString()}k openings
+                    `);
             })
-            .on("mouseout", () => {
+            .on("mouseout", function() {
+                d3.select(this)
+                    .transition()
+                    .duration(150)
+                    .attr("r", 4)
+                    .attr("fill", "#1f77b4");
+
                 tooltip.style("opacity", 0);
             });
     });

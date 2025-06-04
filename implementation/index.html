@@ -207,6 +207,9 @@
 
         <h2>Monthly Job Openings</h2>
         <svg id="lineChartJOLTS" width="1000" height="500"></svg>
+
+        <h2>Remote vs Hybrid vs Onsite Jobs (2023)</h2>
+        <div id="donutChartRemote"></div>
     </div>
     
     <div class="tooltip" id="tooltip"></div>
@@ -215,11 +218,12 @@
     <script src="bar-chart-layoffs-by-company.js"></script>
     <script src="bar-chart-layoffs-by-location.js"></script>
     <script src="line-chart-job-postings.js"></script>
-    <script>
+    <script src="donut-chart-remote-vs-onsite.js"></script>    <script>
         document.addEventListener("DOMContentLoaded", () => {
-        init_bar_chart_layoffs_by_company();
-        init_bar_chart_layoffs_by_location();
-        init_line_chart_jolts_information();
+            init_bar_chart_layoffs_by_company();
+            init_bar_chart_layoffs_by_location();
+            init_line_chart_jolts_information();
+            init_donut_chart_remote_vs_onsite();
         });
     </script>
 

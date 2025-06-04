@@ -17,7 +17,9 @@ function init_bar_chart_layoffs_by_location() {
         .attr("text-anchor", "middle")
         .attr("x", width / 2)
         .attr("y", height + margin.bottom - 10)
-        .style("font-size", "12px")
+        .style("font-size", "13px")
+        .style("font-family", "sans-serif")
+        .style("font-weight", "500")
         .text("Location");
 
     chart.append("text")
@@ -26,7 +28,9 @@ function init_bar_chart_layoffs_by_location() {
         .attr("transform", "rotate(-90)")
         .attr("x", -height / 2)
         .attr("y", -margin.left + 15)
-        .style("font-size", "12px")
+        .style("font-size", "13px")
+        .style("font-family", "sans-serif")
+        .style("font-weight", "500")
         .text("Number of Layoffs");
 
     d3.dsv(";", "tech_layoffs_combined.csv").then(data => {
@@ -64,9 +68,14 @@ function init_bar_chart_layoffs_by_location() {
             xAxisGroup.call(d3.axisBottom(x))
                 .selectAll("text")
                 .attr("transform", "rotate(-30)")
-                .style("text-anchor", "end");
+                .style("text-anchor", "end")
+                .style("font-family", "sans-serif")
+                .style("font-size", "12px");
 
-            yAxisGroup.call(d3.axisLeft(y));
+            yAxisGroup.call(d3.axisLeft(y))
+                .selectAll("text")
+                .style("font-family", "sans-serif")
+                .style("font-size", "12px");
 
             const bars = chart.selectAll(".bar-location").data(topLocations, d => d[0]);
 
@@ -84,19 +93,37 @@ function init_bar_chart_layoffs_by_location() {
 
             const barsEnter = bars.enter().append("rect")
                 .attr("class", "bar-location")
-                .style("fill", "steelblue")
+                .style("fill", "#1f77b4")
                 .attr("x", d => x(d[0]))
                 .attr("width", x.bandwidth())
                 .attr("y", height)
                 .attr("height", 0)
                 .style("opacity", 0)
-                .on("mouseover", function(event, d) {
+                .style("cursor", "pointer")
+                .on("mouseover", function (event, d) {
+                    d3.select(this)
+                        .raise()
+                        .transition()
+                        .duration(150)
+                        .attr("width", x.bandwidth() + 4)
+                        .attr("x", x(d[0]) - 2)
+                        .attr("y", y(d[1]) - 5)
+                        .attr("height", height - y(d[1]) + 5);
+
                     tooltip.html(`<strong>${d[0]}</strong><br>Layoffs: ${d[1].toLocaleString()}`)
                         .style("left", (event.pageX + 10) + "px")
                         .style("top", (event.pageY - 15) + "px")
                         .style("opacity", 1);
                 })
-                .on("mouseout", function() {
+                .on("mouseout", function (event, d) {
+                    d3.select(this)
+                        .transition()
+                        .duration(150)
+                        .attr("width", x.bandwidth())
+                        .attr("x", x(d[0]))
+                        .attr("y", y(d[1]))
+                        .attr("height", height - y(d[1]));
+
                     tooltip.style("opacity", 0);
                 });
 

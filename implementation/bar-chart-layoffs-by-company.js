@@ -18,7 +18,9 @@ function init_bar_chart_layoffs_by_company() {
         .attr("text-anchor", "middle")
         .attr("x", width / 2)
         .attr("y", height + margin.bottom - 10)
-        .style("font-size", "12px")
+        .style("font-size", "13px")
+        .style("font-family", "sans-serif")
+        .style("font-weight", "500")
         .text("Company");
 
     chart.append("text")
@@ -27,7 +29,9 @@ function init_bar_chart_layoffs_by_company() {
         .attr("transform", "rotate(-90)")
         .attr("x", -height / 2)
         .attr("y", -margin.left + 15)
-        .style("font-size", "12px")
+        .style("font-size", "13px")
+        .style("font-family", "sans-serif")
+        .style("font-weight", "500")
         .text("Number of Layoffs");
 
     d3.dsv(";", "tech_layoffs_combined.csv").then(data => {
@@ -51,7 +55,6 @@ function init_bar_chart_layoffs_by_company() {
         select.on("change", () => updateChart(+select.node().value));
 
         const buttonContainer = d3.select("#yearButtonsLayoffsByCompany");
-
         years.forEach(year => {
             buttonContainer.append("button")
                 .text(year)
@@ -77,9 +80,14 @@ function init_bar_chart_layoffs_by_company() {
                 .call(d3.axisBottom(x))
                 .selectAll("text")
                 .attr("transform", "rotate(-30)")
-                .style("text-anchor", "end");
+                .style("text-anchor", "end")
+                .style("font-family", "sans-serif")
+                .style("font-size", "12px");
 
-            yAxisGroup.call(d3.axisLeft(y));
+            yAxisGroup.call(d3.axisLeft(y))
+                .selectAll("text")
+                .style("font-family", "sans-serif")
+                .style("font-size", "12px");
 
             const bars = chart.selectAll(".bar-company").data(topCompanies, d => d[0]);
 
@@ -99,25 +107,43 @@ function init_bar_chart_layoffs_by_company() {
             const barsEnter = bars.enter()
                 .append("rect")
                 .attr("class", "bar-company")
-                .style("fill", "steelblue")
+                .style("fill", "#1f77b4")
                 .attr("x", d => x(d[0]))
                 .attr("width", x.bandwidth())
                 .attr("y", y(0))
                 .attr("height", 0)
                 .style("opacity", 0)
-                .on("mouseover", (event, d) => {
-                    tooltip.transition().duration(200).style("opacity", 1);
+                .style("cursor", "pointer")
+                .on("mouseover", function (event, d) {
+                    d3.select(this)
+                        .raise()
+                        .transition()
+                        .duration(150)
+                        .attr("width", x.bandwidth() + 4)
+                        .attr("x", x(d[0]) - 2)
+                        .attr("y", y(d[1]) - 5)
+                        .attr("height", height - y(d[1]) + 5);
+
+                    tooltip.transition().duration(150).style("opacity", 1);
                     tooltip.html(`<strong>${d[0]}</strong><br>Layoffs: ${d[1].toLocaleString()}`)
                         .style("left", (event.pageX + 15) + "px")
                         .style("top", (event.pageY - 15) + "px");
                 })
-                .on("mousemove", (event) => {
+                .on("mousemove", event => {
                     tooltip
                         .style("left", (event.pageX + 15) + "px")
                         .style("top", (event.pageY - 15) + "px");
                 })
-                .on("mouseout", () => {
-                    tooltip.transition().duration(300).style("opacity", 0);
+                .on("mouseout", function (event, d) {
+                    d3.select(this)
+                        .transition()
+                        .duration(150)
+                        .attr("width", x.bandwidth())
+                        .attr("x", x(d[0]))
+                        .attr("y", y(d[1]))
+                        .attr("height", height - y(d[1]));
+
+                    tooltip.transition().duration(200).style("opacity", 0);
                 });
 
             barsEnter.transition().duration(1000)
