@@ -28,7 +28,7 @@ function init_bar_chart_layoffs_by_company() {
         .attr("text-anchor", "middle")
         .attr("transform", "rotate(-90)")
         .attr("x", -height / 2)
-        .attr("y", -margin.left + 15)
+        .attr("y", -margin.left + 10)
         .style("font-size", "13px")
         .style("font-family", "sans-serif")
         .style("font-weight", "500")

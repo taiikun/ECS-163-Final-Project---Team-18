@@ -204,7 +204,7 @@ function createStreamGraph(data) {
     g.append("text")
         .attr("class", "axis-label y-axis-label")
         .attr("transform", "rotate(-90)")
-        .attr("y", 0 - margin.left + 15)
+        .attr("y", 0 - margin.left + 35)
         .attr("x", 0 - (height / 2))
         .attr("dy", "1em")
         .style("text-anchor", "middle")
