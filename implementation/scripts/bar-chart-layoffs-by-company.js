@@ -5,6 +5,26 @@ function init_bar_chart_layoffs_by_company() {
         height = +svg.attr("height") - margin.top - margin.bottom,
         chart = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
+    const defs = svg.append("defs");
+
+    const defaultGradient = defs.append("linearGradient")
+        .attr("id", "barGradient")
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "0%")
+        .attr("y2", "100%");
+    defaultGradient.append("stop").attr("offset", "0%").attr("stop-color", "#6CA6CD");
+    defaultGradient.append("stop").attr("offset", "100%").attr("stop-color", "#1f77b4");
+
+    const hoverGradient = defs.append("linearGradient")
+        .attr("id", "barGradientHover")
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "0%")
+        .attr("y2", "100%");
+    hoverGradient.append("stop").attr("offset", "0%").attr("stop-color", "#6a5acd");
+    hoverGradient.append("stop").attr("offset", "100%").attr("stop-color", "#8b008b");
+
     const tooltip = d3.select("#tooltip");
 
     const x = d3.scaleBand().padding(0.2).range([0, width]);
@@ -41,10 +61,9 @@ function init_bar_chart_layoffs_by_company() {
         });
 
         data = data.filter(d => d.Year > 2019 && d.Year < 2025);
-
         const years = [...new Set(data.map(d => d.Year))].sort();
-
         const buttonContainer = d3.select("#yearButtonsLayoffsByCompany");
+
         years.forEach(year => {
             buttonContainer.append("button")
                 .text(year)
@@ -100,7 +119,7 @@ function init_bar_chart_layoffs_by_company() {
             const barsEnter = bars.enter()
                 .append("rect")
                 .attr("class", "bar-company")
-                .style("fill", "#1f77b4")
+                .style("fill", "url(#barGradient)")
                 .attr("x", d => x(d[0]))
                 .attr("width", x.bandwidth())
                 .attr("y", y(0))
@@ -115,7 +134,8 @@ function init_bar_chart_layoffs_by_company() {
                         .attr("width", x.bandwidth() + 4)
                         .attr("x", x(d[0]) - 2)
                         .attr("y", y(d[1]) - 5)
-                        .attr("height", height - y(d[1]) + 5);
+                        .attr("height", height - y(d[1]) + 5)
+                        .style("fill", "url(#barGradientHover)");
 
                     tooltip.transition().duration(150).style("opacity", 1);
                     tooltip.html(`<strong>${d[0]}</strong><br>Layoffs: ${d[1].toLocaleString()}`)
@@ -134,7 +154,8 @@ function init_bar_chart_layoffs_by_company() {
                         .attr("width", x.bandwidth())
                         .attr("x", x(d[0]))
                         .attr("y", y(d[1]))
-                        .attr("height", height - y(d[1]));
+                        .attr("height", height - y(d[1]))
+                        .style("fill", "url(#barGradient)");
 
                     tooltip.transition().duration(200).style("opacity", 0);
                 });
@@ -144,7 +165,6 @@ function init_bar_chart_layoffs_by_company() {
                 .attr("height", d => height - y(d[1]))
                 .style("opacity", 1);
 
-            // Update active class
             buttonContainer.selectAll("button").classed("active", false);
             buttonContainer.selectAll("button")
                 .filter(function () {

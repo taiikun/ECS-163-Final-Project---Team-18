@@ -5,6 +5,23 @@ function init_bar_chart_layoffs_by_location() {
         height = +svg.attr("height") - margin.top - margin.bottom,
         chart = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
+    // Gradient definitions
+    const defs = svg.append("defs");
+
+    const defaultGradient = defs.append("linearGradient")
+        .attr("id", "barGradient")
+        .attr("x1", "0%").attr("y1", "0%")
+        .attr("x2", "0%").attr("y2", "100%");
+    defaultGradient.append("stop").attr("offset", "0%").attr("stop-color", "#6CA6CD");
+    defaultGradient.append("stop").attr("offset", "100%").attr("stop-color", "#1f77b4");
+
+    const hoverGradient = defs.append("linearGradient")
+        .attr("id", "barGradientHover")
+        .attr("x1", "0%").attr("y1", "0%")
+        .attr("x2", "0%").attr("y2", "100%");
+    hoverGradient.append("stop").attr("offset", "0%").attr("stop-color", "#6a5acd");
+    hoverGradient.append("stop").attr("offset", "100%").attr("stop-color", "#8b008b");
+
     const x = d3.scaleBand().padding(0.2).range([0, width]);
     const y = d3.scaleLinear().range([height, 0]);
     const tooltip = d3.select("#tooltip");
@@ -52,13 +69,10 @@ function init_bar_chart_layoffs_by_location() {
                 .text(year)
                 .attr("class", "year-button")
                 .on("click", function () {
-                    // Disable all buttons in this container
                     buttonContainer.selectAll("button").attr("disabled", true);
                     const clicked = d3.select(this);
                     const year = +clicked.text();
-
                     updateChart(year).then(() => {
-                        // Re-enable all buttons after chart finishes updating
                         buttonContainer.selectAll("button").attr("disabled", null);
                     });
                 });
@@ -101,7 +115,7 @@ function init_bar_chart_layoffs_by_location() {
 
             const barsEnter = bars.enter().append("rect")
                 .attr("class", "bar-location")
-                .style("fill", "#1f77b4")
+                .style("fill", "url(#barGradient)")
                 .attr("x", d => x(d[0]))
                 .attr("width", x.bandwidth())
                 .attr("y", height)
@@ -116,7 +130,8 @@ function init_bar_chart_layoffs_by_location() {
                         .attr("width", x.bandwidth() + 4)
                         .attr("x", x(d[0]) - 2)
                         .attr("y", y(d[1]) - 5)
-                        .attr("height", height - y(d[1]) + 5);
+                        .attr("height", height - y(d[1]) + 5)
+                        .style("fill", "url(#barGradientHover)");
 
                     tooltip.html(`<strong>${d[0]}</strong><br>Layoffs: ${d[1].toLocaleString()}`)
                         .style("left", (event.pageX + 10) + "px")
@@ -130,7 +145,8 @@ function init_bar_chart_layoffs_by_location() {
                         .attr("width", x.bandwidth())
                         .attr("x", x(d[0]))
                         .attr("y", y(d[1]))
-                        .attr("height", height - y(d[1]));
+                        .attr("height", height - y(d[1]))
+                        .style("fill", "url(#barGradient)");
 
                     tooltip.style("opacity", 0);
                 });
@@ -140,7 +156,6 @@ function init_bar_chart_layoffs_by_location() {
                 .attr("height", d => height - y(d[1]))
                 .style("opacity", 1);
 
-            // Update active class styling
             buttonContainer.selectAll("button")
                 .classed("active", false);
             buttonContainer.selectAll("button")
@@ -149,7 +164,7 @@ function init_bar_chart_layoffs_by_location() {
                 })
                 .classed("active", true);
 
-            return enterTransition.end(); // Returns Promise
+            return enterTransition.end();
         }
 
         updateChart(years[0]);
