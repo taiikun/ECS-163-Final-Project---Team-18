@@ -1,4 +1,6 @@
+// Initialize line chart for job openings data - supports both story and interactive modes
 function init_line_chart_jolts_information(mode) {
+    // Determine which chart container to use based on mode (story vs interactive)
     const chartId = mode === 'story' ? "#StoryLineChartJOLTS" : "#InteractiveLineChartJOLTS";
 
     const svgEl = document.querySelector(chartId);
@@ -15,10 +17,12 @@ function init_line_chart_jolts_information(mode) {
 
     const tooltip = d3.select("#tooltip");
 
+    // Load and process JOLTS (Job Openings and Labor Turnover Survey) data
     d3.csv("data/jolts_information_job_openings.csv").then(rawData => {
         const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         const parseDate = d3.timeParse("%Y-%b");
 
+        // Transform wide-format CSV (columns for each month) into long format for D3
         const data = [];
         rawData.forEach(row => {
             months.forEach(month => {
@@ -29,8 +33,10 @@ function init_line_chart_jolts_information(mode) {
             });
         });
 
+        // Sort chronologically to ensure proper line drawing
         data.sort((a, b) => a.date - b.date);
 
+        // Set up scales for time series visualization
         const x = d3.scaleTime()
             .domain(d3.extent(data, d => d.date))
             .range([0, width]);
@@ -39,6 +45,7 @@ function init_line_chart_jolts_information(mode) {
             .domain([0, d3.max(data, d => d.value)]).nice()
             .range([height, 0]);
 
+        // Configure axes - show only years on x-axis to avoid overcrowding
         const xAxisYears = d3.axisBottom(x)
             .ticks(d3.timeYear.every(1))
             .tickFormat(d3.timeFormat("%Y"))
@@ -48,6 +55,7 @@ function init_line_chart_jolts_information(mode) {
         const yAxis = d3.axisLeft(y);
         const yGrid = d3.axisLeft(y).tickSize(-width).tickFormat("");
 
+        // Dynamic color scheme based on context (story vs interactive)
         const textColor = mode === 'story' ? 'white' : 'black';
         const axisColor = mode === 'story' ? 'white' : '#000';
         const lineColor = mode === 'story' ? 'white' : '#1f77b4';
@@ -55,6 +63,7 @@ function init_line_chart_jolts_information(mode) {
         const hoverDotColor = mode === 'story' ? '#ffa500' : '#ff7f0e';
         const gridColor = mode === 'story' ? 'white' : '#ccc';
 
+        // Draw axes with appropriate styling
         chart.append("g")
             .attr("transform", `translate(0,${height})`)
             .call(xAxisYears)
@@ -72,6 +81,7 @@ function init_line_chart_jolts_information(mode) {
                 .style("font-size", "12px"))
             .call(g => g.selectAll("path, line").attr("stroke", axisColor));
 
+        // Add background grid for easier reading
         chart.append("g")
             .attr("class", "grid")
             .call(yGrid)
@@ -79,6 +89,7 @@ function init_line_chart_jolts_information(mode) {
             .attr("stroke", gridColor)
             .attr("stroke-dasharray", "2,2");
 
+        // Add axis labels
         chart.append("text")
             .attr("class", "x label")
             .attr("text-anchor", "middle")
@@ -100,11 +111,13 @@ function init_line_chart_jolts_information(mode) {
             .style("fill", textColor)
             .text("Job Openings (Thousands)");
 
+        // Create smooth line path using monotone interpolation
         const line = d3.line()
             .x(d => x(d.date))
             .y(d => y(d.value))
             .curve(d3.curveMonotoneX);
 
+        // Draw the main trend line
         chart.append("path")
             .datum(data)
             .attr("fill", "none")
@@ -112,6 +125,7 @@ function init_line_chart_jolts_information(mode) {
             .attr("stroke-width", 2.5)
             .attr("d", line);
 
+        // Add interactive data points with hover effects
         chart.selectAll("circle")
             .data(data)
             .enter()
@@ -122,12 +136,14 @@ function init_line_chart_jolts_information(mode) {
             .attr("fill", dotColor)
             .style("cursor", "pointer")
             .on("mouseover", function (event, d) {
+                // Enlarge and highlight hovered point
                 d3.select(this)
                     .transition()
                     .duration(150)
                     .attr("r", 7)
                     .attr("fill", hoverDotColor);
 
+                // Show detailed tooltip with formatted date and value
                 tooltip
                     .style("left", (event.pageX + 10) + "px")
                     .style("top", (event.pageY - 28) + "px")
@@ -135,6 +151,7 @@ function init_line_chart_jolts_information(mode) {
                     .html(`<strong>${d3.timeFormat("%B %Y")(d.date)}</strong><br>${d.value.toLocaleString()}k openings`);
             })
             .on("mouseout", function () {
+                // Reset point to normal size and color
                 d3.select(this)
                     .transition()
                     .duration(150)

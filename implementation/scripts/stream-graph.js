@@ -11,6 +11,7 @@ const colorScheme = d3.scaleOrdinal(d3.schemePaired);
 let parsedSalaryData = null;
 const FADE_DURATION = 300;
 
+// Main data loading function - fetches and parses the CSV file
 async function loadSalaryData() {
     if (parsedSalaryData) return parsedSalaryData;
     
@@ -19,6 +20,7 @@ async function loadSalaryData() {
     const lines = text.split('\n').filter(line => line.trim());
     const data = [];
     
+    // Parse CSV manually to handle quoted fields properly
     for (let i = 1; i < lines.length; i++) {
         const line = lines[i];
         const cleanLine = line.replace(/^"|"$/g, '');
@@ -46,10 +48,12 @@ async function loadSalaryData() {
     return data;
 }
 
+// Process raw data into format suitable for stream graph visualization
 async function processSalaryData(aggregation) {
     const rawData = await loadSalaryData();
     if (!rawData || rawData.length === 0) return [];
     
+    // Find top 10 most common job titles to focus the visualization
     const titleCounts = {};
     rawData.forEach(row => {
         titleCounts[row.jobTitle] = (titleCounts[row.jobTitle] || 0) + 1;
@@ -62,6 +66,7 @@ async function processSalaryData(aggregation) {
 
     const filteredData = rawData.filter(row => topTitles.includes(row.jobTitle));
     
+    // Group data by time period and job title, calculate average salaries
     const grouped = {};
     filteredData.forEach(row => {
         if (isNaN(row.year)) return; 
@@ -92,6 +97,7 @@ async function processSalaryData(aggregation) {
     return processedData;
 }
 
+// Main function to create the stream graph visualization
 function createStreamGraph(data) {
     d3.select("#chart-container").html('');
     
@@ -104,6 +110,7 @@ function createStreamGraph(data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
     
+    // Sort periods chronologically for proper time series display
     const periods = [...new Set(data.map(d => d.period))].sort((a, b) => {
         const partsA = a.split('-Q');
         const partsB = b.split('-Q');
@@ -117,6 +124,7 @@ function createStreamGraph(data) {
     });
     const categories = [...new Set(data.map(d => d.category))];
     
+    // Transform data into format required by D3 stack layout
     const stackData = periods.map(period => {
         const periodData = {period: period};
         categories.forEach(cat => {
@@ -126,6 +134,7 @@ function createStreamGraph(data) {
         return periodData;
     });
     
+    // Create stack layout with wiggle offset for organic stream appearance
     const stack = d3.stack()
         .keys(categories)
         .offset(d3.stackOffsetWiggle);
@@ -149,6 +158,7 @@ function createStreamGraph(data) {
         .y1(d => yScale(d[1]))
         .curve(d3.curveCardinal);
     
+    // Create interactive stream areas with hover effects
     g.selectAll(".stream-area") 
         .data(series)
         .enter()
@@ -163,6 +173,7 @@ function createStreamGraph(data) {
             tooltip.style("opacity", 1);
         })
         .on("mousemove", function(event, d) {
+            // Calculate which time period the mouse is hovering over
             const [mouseX] = d3.pointer(event, this);
             const invertedX = xScale.domain().find((p, i, arr) => {
                 if (i === arr.length - 1) return true;
@@ -222,6 +233,7 @@ function createStreamGraph(data) {
         .style("opacity", 1);
 }
 
+// Create interactive legend with click-to-hide functionality
 function createLegend(categories, colorScale) {
     const legendContainer = d3.select("#legend");
     legendContainer.html('');
@@ -235,6 +247,7 @@ function createLegend(categories, colorScale) {
                 d3.select(this).classed("hidden", !isHidden);
                 d3.select(this).style("opacity", newOpacity);
                 
+                // Toggle visibility of corresponding stream area
                 svg.select("g").selectAll(".stream-area") 
                     .filter(d => d.key === category)
                     .transition().duration(FADE_DURATION)
@@ -251,15 +264,14 @@ function createLegend(categories, colorScale) {
     });
 }
 
-// Global animation state
 let currentAnimation = 1;
 
+// Animate the timeline visualization with staggered reveals
 function animateTimeline() {
     if (!svg) return;
 
     currentAnimation = (currentAnimation * 1);
     
-    // Clear any existing animations
     svg.selectAll(".stream-area").interrupt();
     svg.selectAll(".axis").interrupt();
     
@@ -270,7 +282,7 @@ function animateTimeline() {
     }
 }
 
-// Animation: Reveal by category (staggered)
+// Animation: Reveal stream areas one by one with staggered timing
 function animateByCategory() {
     const paths = svg.selectAll(".stream-area");
     
@@ -281,11 +293,9 @@ function animateByCategory() {
         .ease(d3.easeCubicOut)
         .attr("opacity", 0.8);
     
-    // Fade in axis
     animateAxis();
 }
 
-// Helper function to animate axis
 function animateAxis() {
     svg.selectAll(".axis text")
         .style("opacity", 0)
@@ -301,6 +311,7 @@ function animateAxis() {
         .style("opacity", 1);
 }
 
+// Main update function called when user changes aggregation settings
 async function updateVisualization() {
     const aggregation = document.getElementById('aggregation-select').value;
     
@@ -310,6 +321,7 @@ async function updateVisualization() {
     if (existingSvg.empty()) {
         loadAndDrawData(aggregation, chartContainer);
     } else {
+        // Smooth transition when switching between yearly/quarterly views
         existingSvg.transition()
             .duration(FADE_DURATION)
             .style("opacity", 0)
@@ -336,9 +348,11 @@ async function loadAndDrawData(aggregation, chartContainer) {
     }
 }
 
+// Event listeners for user interactions
 document.getElementById('aggregation-select').addEventListener('change', updateVisualization);
 document.getElementById('animate-btn').addEventListener('click', animateTimeline);
 
+// Initialize the visualization on page load
 async function testFileAccess() {
     const response = await fetch('data/global_tech_salary.csv');
 }
