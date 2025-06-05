@@ -15,7 +15,7 @@ function init_line_chart_jolts_information(mode) {
 
     const tooltip = d3.select("#tooltip");
 
-    d3.csv("jolts_information_job_openings.csv").then(rawData => {
+    d3.csv("data/jolts_information_job_openings.csv").then(rawData => {
         const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         const parseDate = d3.timeParse("%Y-%b");
 

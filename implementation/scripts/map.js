@@ -98,7 +98,7 @@ function create_map() {
             .attr("stroke", "#999")
             .attr("d", path);
 
-        d3.csv("tech_layoffs_Q2_2024.csv").then(data => {
+        d3.csv("data/tech_layoffs_Q2_2024.csv").then(data => {
             data.forEach(d => {
                 d.Laid_Off = +d.Laid_Off;
                 d.latitude = +d.latitude;

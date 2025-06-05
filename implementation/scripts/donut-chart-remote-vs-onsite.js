@@ -28,7 +28,7 @@ function init_donut_chart_remote_vs_onsite(containerSelector = "#donutChartRemot
         .style("font-weight", "500")
         .style("pointer-events", "none");
 
-    fetch("global_tech_salary.csv")
+    fetch("data/global_tech_salary.csv")
         .then(response => response.text())
         .then(text => {
             const lines = text.split('\n').filter(d => d.trim() !== '');

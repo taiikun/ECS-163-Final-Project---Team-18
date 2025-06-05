@@ -14,7 +14,7 @@ const FADE_DURATION = 300;
 async function loadSalaryData() {
     if (parsedSalaryData) return parsedSalaryData;
     
-    const response = await fetch('global_tech_salary.csv'); 
+    const response = await fetch('data/global_tech_salary.csv'); 
     const text = await response.text();
     const lines = text.split('\n').filter(line => line.trim());
     const data = [];
@@ -340,7 +340,7 @@ document.getElementById('aggregation-select').addEventListener('change', updateV
 document.getElementById('animate-btn').addEventListener('click', animateTimeline);
 
 async function testFileAccess() {
-    const response = await fetch('global_tech_salary.csv');
+    const response = await fetch('data/global_tech_salary.csv');
 }
 
 testFileAccess().then(() => {
