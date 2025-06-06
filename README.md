@@ -20,7 +20,7 @@ The data tells a compelling story of an industry in flux. Tech salaries climbed 
 
 1. **Clone the repository**
    ```bash
-   git clone [your-repository-url]
+   git clone https://github.com/taiikun/ECS-163-Final-Project---Team-18
    cd [repository-name]
 2. **Start a local web server**
 - Install the Live Server extension in VS Code
